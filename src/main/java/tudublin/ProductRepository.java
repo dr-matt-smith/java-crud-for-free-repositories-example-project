@@ -8,7 +8,7 @@ public class ProductRepository
     {
 
         try {
-            Class c = Class.forName("com.mycompany.app.ProductRepository");
+            Class c = Class.forName("tudublin.ProductRepository");
             System.out.println(c.getPackage());
             Method m[] = c.getDeclaredMethods();
             for (int i = 0; i < m.length; i++)
@@ -20,11 +20,19 @@ public class ProductRepository
 
         Product p = new Product();
         Field[] fields = p.getClass().getDeclaredFields();
+        Method[] methods = p.getClass().getDeclaredMethods();
 
         System.out.println("---- fields ------");
         String[] fieldNamesArray = getFieldNames(fields);
-        for (int i = 0; i < fieldNamesArray.length; i++)
+        for (int i = 0; i < fieldNamesArray.length; i++) {
             System.out.println(fieldNamesArray[i]);
+        }
+
+        System.out.println("---- methods ------");
+        for (int i = 0; i < methods.length; i++) {
+            System.out.println(methods[i]);
+        }
+
 
         System.out.println("------");
 

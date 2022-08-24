@@ -57,12 +57,15 @@ public class DatabaseManager
             
             String sql = "CREATE DATABASE " + this.dbname;
             statement = conn.createStatement();
-            resultset = statement.executeQuery(sql);
+            statement.executeUpdate(sql);
+
+
 
         } catch (SQLException e) {
             if(this.databaseExistsSQLException(e)){
                 // database already exists - all good
                 System.out.println("using database '" + this.dbname + "\n");
+                success = true;
 
             } else {
                 // some other error

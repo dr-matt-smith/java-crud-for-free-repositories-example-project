@@ -13,6 +13,7 @@ public class App
     public static void main( String[] args )
     {
         ProductRepository productRepository = new ProductRepository();
+        System.out.println(productRepository);
         productRepository.fred();
 
 
@@ -72,9 +73,13 @@ public class App
 
                 Product product = new Product();
 
-                product.id = resultset.getInt("id");
-                product.description = resultset.getString("description");
-                product.price = resultset.getDouble("id");
+                int id = resultset.getInt("id");
+                product.setId(id);
+                String description = resultset.getString("description");
+                product.setDescription(description);
+
+                Double price = resultset.getDouble("id");
+                product.setPrice(price);
                 // etc.
 
                 System.out.println(product);
