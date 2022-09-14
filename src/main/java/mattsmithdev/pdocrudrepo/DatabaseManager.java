@@ -64,7 +64,7 @@ public class DatabaseManager
         } catch (SQLException e) {
             if(this.databaseExistsSQLException(e)){
                 // database already exists - all good
-                System.out.println("using database '" + this.dbname + "\n");
+                System.out.println("(DatabaseManager) using database '" + this.dbname + "'");
                 success = true;
 
             } else {

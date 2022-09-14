@@ -1,28 +1,53 @@
 package mattsmithdev.pdocrudrepo;
 
+
+import com.mysql.cj.jdbc.result.ResultSetImpl;
+import tudublin.Module;
+
+import java.lang.reflect.Array;
+import java.sql.*;
 import java.util.*;
 import java.util.stream.*;
 import java.lang.reflect.*;
 
+/**
+ * for the future
+ * @TODO: SQLITE
+ * https://www.sqlitetutorial.net/sqlite-java/create-table/
+ *
+ * @TODO: DB testing
+ * https://blog.testproject.io/2021/03/08/jdbctemplate-for-java-automated-database-tests/
+ *
+ * @TODO: ConnectorJ version in POM needs to match MySQL server version
+ * 8 or more usually ...
+ *
+ * @TODO: Spring framework for simpler DB
+ * https://www.digitalocean.com/community/tutorials/spring-jdbctemplate-example
+ */
+
 public class DatabaseTableRepository
 {
     /**
-     * the (fully namespaced) name of the class corresponding to the database table to be worked with
-     * e.g. \MyCompany\Product
-     *
-     * @var string
+     * the (fully package namespaced) name of the class corresponding to the database table to be worked with
+     * e.g. mycompany.Product
      */
-    private String classNameForDbRecords;
+    private String qualifiedClassName;
 
     /**
-     * the name of the database table to be worked with
-     * @var string
+     * the Entity class name (no package/namespace)
+     * e.g. Product
+     */
+    private String shortClassName;
+
+    /**
+     * the name of the database table to be worked with all lowercase)
+     * e.g. product
      */
     private String tableName;
 
     /**
      * DatabaseTableRepository constructor.
-     * @param array $params
+     * param array params
      *
      * possible params:
      *      'namespace' e.g. 'MyNameSpace'
@@ -34,64 +59,90 @@ public class DatabaseTableRepository
      *      repository class is dbTable name with suffix 'Repository', e.g. Movie, MovieRepository
      *      table name is lower case version of class name, e.g. table 'movie' for class 'Movie'
      */
-    public function __construct(Array $params = [])
+    public DatabaseTableRepository()
     {
         // e.g.
         // My\NameSpace\EntityRepository
         //
         // defaults are as follows:
-        // $namespace = My\NameSpace - entity class in same namespace as repository class
-        // $className = Entity - entity name is repository class less, less the word 'Repository'
-        // $tableName = entity - table name is same as entity class name, but all in loser case
+        // namespace = My\NameSpace - entity class in same namespace as repository class
+        // className = Entity - entity name is repository class less, less the word 'Repository'
+        // tableName = entity - table name is same as entity class name, but all in loser case
         //
         // IF the above 3 defaults are true,
         // THEN the repository class does not need a constructor at all :-)
 
         // (1) create default values
         // namespace
-        try {
-            $reflector = new \ReflectionClass(get_class($this));
-            $namespace  = $reflector->getNamespaceName();
-            $shortName = $reflector->getShortName();
-            $className = str_replace('Repository', '', $shortName);
-            $tableName = strtolower($className);
-        } catch (\Exception $e) {
-            $namespace = 'error-trying-to-infer-namespace';
-            $className = 'error-trying-to-infer-classname';
-            $tableName = 'error-trying-to-infer-tablename';
+        Class<?> clazz = this.getClass();
 
-        }
+        // e.g. tudubln.ModuleRepository
+        String qualifiedRepositoryClassName = clazz.getName();
+        String suffix = "Repository";
 
-        // (2) use provided params, if found
-        if(isset($params['namespace'])){
-            $namespace = $params['namespace'];
-        }
-        if(isset($params['className'])){
-            $className = $params['className'];
-        }
-        if(isset($params['tableName'])){
-            $tableName = $params['tableName'];
-        }
+        // e.g. tudublin.Module
+        this.qualifiedClassName = qualifiedRepositoryClassName.substring(0, qualifiedRepositoryClassName.lastIndexOf(suffix));
 
-        // store namespace class and db table name into properties
-        this.classNameForDbRecords = $namespace . '\\' . $className;
-        this.tableName = $tableName;
+        // e.g. ModuleRepository
+        String shortRepositoryClassName = clazz.getSimpleName();
+        // e.g. Module
+        this.shortClassName = shortRepositoryClassName.substring(0, shortRepositoryClassName.lastIndexOf(suffix));
+
+        // e.g. module
+        this.tableName = this.shortClassName.toLowerCase();
+
     }
 
-    /**
-     * @return string
-     */
-    public String getClassNameForDbRecords()
+
+
+
+//    /**
+//     * return name of entity class - current class name less "Repository"
+//     * @param clazz
+//     * @return
+//     *
+//     * e.g. ModuleRepository . Module
+//     *
+//     * throws Exception if class name does NOT end with Repository (and starts with at least one letter before Repository)
+//     */
+//    public String getShortClassName(Class<?> clazz ) throws Exception
+//    {
+//        String suffix = "Repository";
+//        int suffixLength = suffix.length();
+//
+//        String className = clazz.getSimpleName();
+//        int length = className.length();
+//
+//        if(length < (suffixLength+1)){
+//            throw new Exception("class name must be longer than 'Repository'!");
+//        }
+//
+//        if(!className.endsWith(suffix)){
+//            throw new Exception("class name must end with 'Repository'");
+//        }
+//
+//        return className.substring(0, className.lastIndexOf(suffix));
+//    }
+
+
+    public String getQualifiedClassName()
     {
-        return this.classNameForDbRecords;
+        return qualifiedClassName;
     }
 
-    /**
-     * @param string $classNameForDbRecords
-     */
-    public void setClassNameForDbRecords(String classNameForDbRecords)
+    public void setQualifiedClassName(String qualifiedClassName)
     {
-        this.classNameForDbRecords = classNameForDbRecords;
+        this.qualifiedClassName = qualifiedClassName;
+    }
+
+    public String getShortClassName()
+    {
+        return shortClassName;
+    }
+
+    public void setShortClassName(String shortClassName)
+    {
+        this.shortClassName = shortClassName;
     }
 
     /**
@@ -103,7 +154,7 @@ public class DatabaseTableRepository
     }
 
     /**
-     * @param string $tableName
+     * param string tableName
      */
     public void setTableName(String tableName)
     {
@@ -111,64 +162,238 @@ public class DatabaseTableRepository
     }
 
 
-    public function findAll()
+    public Object[] findAll2()
     {
-        $db = new DatabaseManager();
-        $connection = $db->getDbh();
+        DatabaseManager dataBaseManager = new DatabaseManager();
+        Connection connection = dataBaseManager.getDbh();
 
-        $sql = 'SELECT * from :table';
-        $sql = str_replace(':table', this.tableName, $sql);
+        String sql = "SELECT * from :table";
+        PreparedStatement statement;
 
-        $statement = $connection->prepare($sql);
-        $statement->setFetchMode(\PDO::FETCH_CLASS, this.classNameForDbRecords);
-        $statement->execute();
+        try {
+            sql = sql.replace(":table", this.tableName);
+            statement = connection.prepareStatement(sql);
+//            statement.setString(1, this.tableName);
+            statement.execute(sql);
 
-        $objects = $statement->fetchAll();
-        return $objects;
+            sql = statement.toString();
+            ResultSet resultset = statement.executeQuery();
+
+            // ?? success ?? what value of "i"
+
+        } catch (Exception e) {
+            System.out.println("Database error (trying to SELECT from table):: " + this.tableName + "\n" + e.getMessage());
+            System.out.println("SQL = " + sql);
+        }
+
+        Object[] objects = new Object[1];
+        objects[0] = new Object();
+
+        return objects;
     }
 
-    public function find($id)
+
+    /**
+     * https://stackoverflow.com/questions/2127318/java-how-can-i-do-dynamic-casting-of-a-variable-from-one-type-to-another
+     *
+     */
+    private <T> T castObject(Class<T> clazz, Object object) {
+        return (T) object;
+    }
+
+    /**
+     *
+     * @return
+     */
+    public <T> T[] entityObjects(Class<T> clazz, Object[] objects)
     {
-        $db = new DatabaseManager();
-        $connection = $db->getDbh();
+        int size = objects.length;
+        T[] entities = (T[])Array.newInstance(clazz, size);
 
-        $sql = 'SELECT * from :table WHERE id=:id';
-        $sql = str_replace(':table', this.tableName, $sql);
-
-        $statement = $connection->prepare($sql);
-        $statement->bindParam(':id', $id, \PDO::PARAM_INT);
-        $statement->setFetchMode(\PDO::FETCH_CLASS, this.classNameForDbRecords);
-        $statement->execute();
-
-        if ($object = $statement->fetch()) {
-            return $object;
-        } else {
-            return null;
+        for(int i = 0; i < size; i++ ){
+            entities[i] = (T)objects[i];
         }
+
+        return entities;
+    }
+
+    public <T> T[] findAll(Class<T> clazz) throws Exception
+    {
+
+
+//        ArrayList<Object> objects = new ArrayList<Object>();
+
+        Object[] objects = new Object[1000];
+        DatabaseManager dataBaseManager = new DatabaseManager();
+        Connection connection = dataBaseManager.getDbh();
+
+        String sql = "SELECT * from :table";
+        PreparedStatement statement;
+
+        try {
+            sql = sql.replace(":table", this.tableName);
+            statement = connection.prepareStatement(sql);
+//            statement.setString(1, this.tableName);
+            statement.execute(sql);
+
+//            System.out.println("SQL = " + sql);
+
+
+            sql = statement.toString();
+            ResultSet resultset = statement.executeQuery();
+            //----- RS to objects ----
+            ArrayList<T> objectArrayList = new ArrayList<T>();
+
+            DatabaseUtility dbUtility = new DatabaseUtility();
+            while(resultset.next()){
+                T object = clazz.getDeclaredConstructor().newInstance();
+
+                // "set" each field from RS
+                Field[] fields = clazz.getDeclaredFields();
+                for (Field field : fields) {
+                    String fieldName = field.getName();
+                    Object fieldType = field.getType();
+                    String setterMethodName = dbUtility.setterMethodName(fieldName);
+                    Method setterMethod;
+
+
+//                    String mySQLtype = dbUtility.dbDataType(fieldType);
+
+                    if(fieldType.equals(Double.TYPE))
+                    {
+                        double value = resultset.getDouble(fieldName);
+                        setterMethod = clazz.getMethod(setterMethodName, double.class);
+                        setterMethod.invoke(object, value);
+                    }
+
+                    if(fieldType.equals(Float.TYPE))
+                    {
+                        float value = resultset.getFloat(fieldName);
+                        setterMethod = clazz.getMethod(setterMethodName, float.class);
+                        setterMethod.invoke(object, value);
+                    }
+
+                    if(fieldType.equals(Boolean.TYPE))
+                    {
+                        int valueInt = resultset.getInt(fieldName);
+                        boolean value = (valueInt == 1);
+                        setterMethod = clazz.getMethod(setterMethodName, boolean.class);
+                        setterMethod.invoke(object, value);
+                    }
+
+                    if(fieldType.equals(Integer.TYPE))
+                    {
+                        int value = resultset.getInt(fieldName);
+                        setterMethod = clazz.getMethod(setterMethodName, int.class);
+                        setterMethod.invoke(object, value);
+                    }
+
+                    if(fieldType.equals(String.class))
+                    {
+                        String value = resultset.getString(fieldName);
+                        setterMethod = clazz.getMethod(setterMethodName, String.class);
+                        setterMethod.invoke(object, value);
+                    }
+
+
+                }
+
+
+
+                objectArrayList.add(object);
+            }
+
+            objects = objectArrayList.toArray();
+
+
+
+
+        } catch (Exception e) {
+            System.out.println("Database error (trying to SELECT from table):: " + this.tableName + "\n" + e.getMessage());
+            System.out.println("SQL = " + sql);
+        }
+
+
+        // convert ArrayList to Array
+//        return objects.toArray(new Object[0]);
+        return entityObjects(clazz, objects);
+    }
+
+//
+//    public Module[] resultSetToObjects(ResultSet rs, Class<T> clazz) throws Exception
+//    {
+//        Class<?> clazz2 = Class.forName(this.qualifiedClassName);
+//
+//        ArrayList<Module> objects = new ArrayList<Module>();
+//
+//
+//        while(rs.next()){
+//            Module module = new Module();
+//            module.setId(rs.getInt("id"));
+//            module.setDescription(rs.getString("description"));
+//
+//            objects.add(module);
+//        }
+//
+//        return objects.toArray(new Module[0]);
+//    }
+
+
+    public void find(int id)
+    {
+        DatabaseManager dataBaseManager = new DatabaseManager();
+        Connection connection = dataBaseManager.getDbh();
+
+        try {
+            String sql = "SELECT * from :table WHERE id=:id";
+            sql = sql.replace(":table", this.tableName);
+            sql = sql.replace(":id", ""+id);
+
+            PreparedStatement statement = connection.prepareStatement(sql);
+//            statement.setString(1, this.tableName);
+//            statement.setInt(2, id);
+            statement.execute(sql);
+            ResultSet resultset = statement.executeQuery();
+
+            // ?? success ?? what value of "i"
+
+        } catch (Exception e) {
+            System.out.println("Database error (trying to TRUNCATE table):: \n" + e.getMessage());
+
+        }
+
     }
 
 
     /**
      * delete record for given ID - return true/false depending on delete success
-     * @param $id
+     * @param id
      *
      * @return bool
      */
 
-    public function delete($id)
+    public void delete(int id)
     {
-        $db = new DatabaseManager();
-        $connection = $db->getDbh();
+        DatabaseManager dataBaseManager = new DatabaseManager();
+        Connection connection = dataBaseManager.getDbh();
 
-        $sql = 'DELETE from :table WHERE id=:id';
-        $sql = str_replace(':table', this.tableName, $sql);
+        try {
+            String sql = "DELETE from :table WHERE id=:id";
+            sql = sql.replace(":id", ""+id);
+            sql = sql.replace(":table", this.tableName);
+            PreparedStatement statement = connection.prepareStatement(sql);
+//            statement.setString(1, this.tableName);
+//            statement.setInt(2, id);
+            statement.execute(sql);
+            int i = statement.executeUpdate();
 
-        $statement = $connection->prepare($sql);
-//        $statement->bindParam(':table',  this.tableName);
-        $statement->bindParam(':id', $id, \PDO::PARAM_INT);
+            // ?? success ?? what value of "i"
 
-        $queryWasSuccessful = $statement->execute();
-        return $queryWasSuccessful;
+        } catch (Exception e) {
+            System.out.println("Database error (trying to TRUNCATE table):: \n" + e.getMessage());
+
+        }
+
     }
 
 
@@ -179,88 +404,90 @@ public class DatabaseTableRepository
      * @return bool
      */
 
-    public function deleteAll()
+    public void deleteAll()
     {
-        $db = new DatabaseManager();
-        $connection = $db->getDbh();
+        DatabaseManager dataBaseManager = new DatabaseManager();
+        Connection connection = dataBaseManager.getDbh();
 
-        $sql = 'TRUNCATE TABLE :table';
-        $sql = str_replace(':table', this.tableName, $sql);
+        try {
+            String sql = "TRUNCATE TABLE " + this.tableName;
+            PreparedStatement statement = connection.prepareStatement(sql);
+            statement.execute(sql);
+            int i = statement.executeUpdate();
 
-        $statement = $connection->prepare($sql);
-//        $statement->bindParam(':table',  this.tableName);
+            // ?? success ?? what value of "i"
 
-        $queryWasSuccessful = $statement->execute();
-        return $queryWasSuccessful;
+        } catch (Exception e) {
+            System.out.println("Database error (trying to TRUNCATE table):: \n" + e.getMessage());
+
+        }
+
+
     }
 
 
-    public function searchByColumn($columnName, $searchText)
-    {
-//        $columnName = filter_var($columnName, FILTER_SANITIZE_STRING);
-
-        $db = new DatabaseManager();
-        $connection = $db->getDbh();
-
-        // wrap wildcard '%' around the serach text for the SQL query
-        $searchText = '%' . $searchText . '%';
-
-        $sql = 'SELECT * from :table WHERE :column LIKE :searchText';
-        $sql = str_replace(':table', this.tableName, $sql);
-        $sql = str_replace(':column', $columnName, $sql);
-
-        $statement = $connection->prepare($sql);
-//        $statement->bindParam(':column', $columnName, \PDO::PARAM_STR);
-        $statement->bindParam(':searchText', $searchText, \PDO::PARAM_STR);
-        $statement->setFetchMode(\PDO::FETCH_CLASS, this.classNameForDbRecords);
-        $statement->execute();
-
-        $objects = $statement->fetchAll();
-
-        return $objects;
-    }
+//    public function searchByColumn(columnName, searchText)
+//    {
+////        columnName = filter_var(columnName, FILTER_SANITIZE_STRING);
+//
+//        db = new DatabaseManager();
+//        connection = db.getDbh();
+//
+//        // wrap wildcard '%' around the serach text for the SQL query
+//        searchText = '%' . searchText . '%';
+//
+//        sql = 'SELECT * from :table WHERE :column LIKE :searchText';
+//        sql = str_replace(':table', this.tableName, sql);
+//        sql = str_replace(':column', columnName, sql);
+//
+//        statement = connection.prepare(sql);
+////        statement.bindParam(':column', columnName, \PDO::PARAM_STR);
+//        statement.bindParam(':searchText', searchText, \PDO::PARAM_STR);
+//        statement.setFetchMode(\PDO::FETCH_CLASS, this.classNameForDbRecords);
+//        statement.execute();
+//
+//        objects = statement.fetchAll();
+//
+//        return objects;
+//    }
 
 
     /**
      * insert new record into the DB table
      * returns new record ID if insertion was successful, otherwise -1
-     * @param Object $object
-     * @return integer
      */
-    public function insert($object)
+    public void insert(Object object)
     {
-        $db = new DatabaseManager();
-        $connection = $db->getDbh();
-
-        $objectAsArrayForSqlInsert = DatatbaseUtility::objectToArrayLessId($object);
-        $fields = array_keys($objectAsArrayForSqlInsert);
-        $insertFieldList = DatatbaseUtility::fieldListToInsertString($fields);
-        $valuesFieldList = DatatbaseUtility::fieldListToValuesString($fields);
-
-        $sql = 'INSERT into :table :insertFieldList :valuesFieldList';
-        $sql = str_replace(':table', this.tableName, $sql);
-        $sql = str_replace(':insertFieldList', $insertFieldList, $sql);
-        $sql = str_replace(':valuesFieldList', $valuesFieldList, $sql);
-
-        $statement = $connection->prepare($sql);
-        $statement->execute($objectAsArrayForSqlInsert);
-        $queryWasSuccessful = ($statement->rowCount() > 0);
-        if($queryWasSuccessful) {
-            return $connection->lastInsertId();
-        } else {
-            return -1;
-        }
+//        db = new DatabaseManager();
+//        connection = db.getDbh();
+//
+//        objectAsArrayForSqlInsert = DatatbaseUtility::objectToArrayLessId(object);
+//        fields = array_keys(objectAsArrayForSqlInsert);
+//        insertFieldList = DatatbaseUtility::fieldListToInsertString(fields);
+//        valuesFieldList = DatatbaseUtility::fieldListToValuesString(fields);
+//
+//        sql = 'INSERT into :table :insertFieldList :valuesFieldList';
+//        sql = str_replace(':table', this.tableName, sql);
+//        sql = str_replace(':insertFieldList', insertFieldList, sql);
+//        sql = str_replace(':valuesFieldList', valuesFieldList, sql);
+//
+//        statement = connection.prepare(sql);
+//        statement.execute(objectAsArrayForSqlInsert);
+//        queryWasSuccessful = (statement.rowCount() > 0);
+//        if(queryWasSuccessful) {
+//            return connection.lastInsertId();
+//        } else {
+//            return -1;
+//        }
     }
 
     /**
      * given an array of object, loop through them and insert them each into the DB table
-     *
-     * @param array $objects]
      */
-    public function insertMany(array $objects)
+    public void insertMany(Object[] objects)
     {
-        foreach($objects as $object){
-            this.insert($object);
+        for(Object object: objects){
+            this.insert(object);
         }
     }
 
@@ -269,33 +496,47 @@ public class DatabaseTableRepository
      * insert new record into the DB table
      * returns new record ID if insertion was successful, otherwise -1
      *
-     * @param $object
+     * @param object
      *
      * @return bool
      */
-    public function update($object)
+    public void update(Object object)
     {
-        $id = $object->getId();
+//        int id = object.getId();
+//
+//        DatabaseManager dataBaseManager = new DatabaseManager();
+//        Connection connection = dataBaseManager.getDbh();
+//
+//        objectAsArrayForSqlInsert = DatatbaseUtility::objectToArrayLessId(object);
+//        fields = array_keys(objectAsArrayForSqlInsert);
+//        updateFieldList = DatatbaseUtility::fieldListToUpdateString(fields);
+//
+//        String sql = "UPDATE :table SET :updateFieldList WHERE id=:id";
+//        sql = sql.replace(":table", this.tableName);
+//        sql = sql.replace(":updateFieldList", updateFieldList);
+//
+//
+//        try {
+//            statement = connection.createStatement();
+//            statement.execute(sql);
+//
+//        } catch (Exception e) {
+//            System.out.println("Database error:: \n" + e.getMessage());
+//
+//        }
+//
+//
+//
+//        statement = connection.prepare(sql);
+//        Statement statement = null;
+//
+//        // add 'id' to parameters array
+//        objectAsArrayForSqlInsert['id'] = id;
+//
+//        queryWasSuccessful = statement.execute(objectAsArrayForSqlInsert);
 
-        $db = new DatabaseManager();
-        $connection = $db->getDbh();
 
-        $objectAsArrayForSqlInsert = DatatbaseUtility::objectToArrayLessId($object);
-        $fields = array_keys($objectAsArrayForSqlInsert);
-        $updateFieldList = DatatbaseUtility::fieldListToUpdateString($fields);
 
-        $sql = 'UPDATE :table SET :updateFieldList WHERE id=:id';
-        $sql = str_replace(':table', this.tableName, $sql);
-        $sql = str_replace(':updateFieldList', $updateFieldList, $sql);
-
-        $statement = $connection->prepare($sql);
-
-        // add 'id' to parameters array
-        $objectAsArrayForSqlInsert['id'] = $id;
-
-        $queryWasSuccessful = $statement->execute($objectAsArrayForSqlInsert);
-
-        return $queryWasSuccessful;
     }
 
 
@@ -304,26 +545,30 @@ public class DatabaseTableRepository
      *
      * @return bool
      */
-    public function dropTable()
+    public void dropTable()
     {
-        $db = new DatabaseManager();
-        $connection = $db->getDbh();
+        DatabaseManager dataBaseManager = new DatabaseManager();
+        Connection connection = dataBaseManager.getDbh();
 
-        $sql = 'DROP TABLE IF EXISTS :table';
-        $sql = str_replace(':table', this.tableName, $sql);
+        try {
+            String sql = "DROP TABLE IF EXISTS " + this.tableName;
+            PreparedStatement statement = connection.prepareStatement(sql);
+            statement.execute(sql);
+            int i = statement.executeUpdate();
 
-        $statement = $connection->prepare($sql);
-//        $statement->execute();
+    // ?? success ?? what value of "i"
 
-        $queryWasSuccessful = $statement->execute();
+        } catch (Exception e) {
+            System.out.println("Database error (trying to DROP table):: \n" + e.getMessage());
 
-        return $queryWasSuccessful;
+        }
+
     }
 
     /**
      * create the table associated with this repository
      *
-     * @param $sql - optional SQL CREATE statement
+     * SQL - optional SQL CREATE statement
      * DEFAULT: Look for a constant CREATE_TABLE_SQL defined in the entity class associated with this repository
      *
      * @return bool
@@ -341,54 +586,50 @@ EXAMPLE OF SQL needed in Entity class:
 
      */
 
-    public boolean createTable(String sql)
+    public void createTable() throws Exception
     {
-        if(empty(sql)){
-            sql = this.getSqlToCreateTable();
-        }
+        String sql = "";
+            try {
+                sql = this.getSqlToCreateTable();
+            } catch (Exception e) {
+                System.out.println("DatabaseTableRepository.createTable() :: Database error \n" + e.getMessage());
+            }
 
-//        try{
-//            DatabaseManager db = new DatabaseManager();
-//            Connection connection = db.getDbh();
-//
-//            Statement statement = connection.prepare($sql);
-//            $statement->execute();
-//        } catch (\PDOException $e){
-//            this.error = $e->getMessage();
-//            print "*** \n";
-//            print "*** sorry - a database error occured - please contact the site administrator ***\n";
-//            print "trying to execute this SQL: \n";
-//            print "$sql \n";
-//            print  $e->getMessage();
-//            print "*** \n";
-//            print "*** \n";
-//            return;
-//        }
+        DatabaseManager dataBaseManager = new DatabaseManager();
+        Connection connection = dataBaseManager.getDbh();
+
+        try {
+            PreparedStatement statement = connection.prepareStatement(sql);
+            statement.execute(sql);
+            int i = statement.executeUpdate();
+
+            // ?? success ?? what value of "i"
+        } catch (Exception e) {
+            System.out.println("*** sorry - a database error occurred ***\n");
+            System.out.println("when trying to CREATE table:: \n" + e.getMessage());
+            System.out.println("\n SQL = " + sql + "\n");
+
+        }
     }
 
-    public String getSqlToCreateTable()
+    public String getSqlToCreateTable() throws Exception
     {
         // try to infer from types of entity class properties
         String sql = this.inferSqlFromPropertyTypes();
 
-        if(!empty(sql)){
+        if(!sql.isEmpty()){
             return sql;
         }
 
-        throw new Exception("cannot find or infer SQL to create table for class " + this.classNameForDbRecords);
-    }
-
-    public boolean empty(String s)
-    {
-        return s.length() > 0;
+        throw new Exception("cannot find or infer SQL to create table for class " + this.qualifiedClassName);
     }
 
 
-
-    public void resetTable(String sql)
+    public void resetTable() throws Exception
     {
+
         this.dropTable();
-        this.createTable(sql);
+        this.createTable();
         this.deleteAll();
     }
 
@@ -404,18 +645,15 @@ EXAMPLE OF SQL needed in Entity class:
      *      category text
      *  )
      */
-    public String inferSqlFromPropertyTypes()
+    public String inferSqlFromPropertyTypes() throws Exception
     {
-        LinkedHashMap<String, Object> map = new LinkedHashMap<>();
+        LinkedHashMap<String, String> sqlTypesMap = new LinkedHashMap<>();
 
         DatabaseUtility dbUtility = new DatabaseUtility();
         String sql = "";
 
-        Class<?> clazz = this.getClass();
+        Class<?> clazz = Class.forName(this.qualifiedClassName);
         Field[] fields = clazz.getDeclaredFields();
-
-//        $reflectionClass = new \ReflectionClass($this->classNameForDbRecords);
-//        $refletionProperties = $reflectionClass->getProperties();
 
         for (Field field : fields) {
             String propertyName = field.getName();
@@ -425,18 +663,16 @@ EXAMPLE OF SQL needed in Entity class:
 
             // if not 'id' add to map
             if("id" != propertyName){
-                map.put(propertyName, mySQLtype);
+                sqlTypesMap.put(propertyName, mySQLtype);
             }
         }
 
-
         sql = "CREATE TABLE IF NOT EXISTS "
-            + $this->tableName
+            + this.tableName
             + " ("
             + "id integer PRIMARY KEY AUTO_INCREMENT, "
-            + dbUtility.dbPropertyTypeList(sqlTypes)
+            + dbUtility.dbPropertyTypeList(sqlTypesMap)
             + ")";
-
         return sql;
     }
 
@@ -454,7 +690,7 @@ EXAMPLE OF SQL needed in Entity class:
             // ignore id field
             if(fieldName != "id"){
                 try {
-                    Method getter = clazz.getMethod(getterName(fieldName));
+                    Method getter = clazz.getMethod(DatabaseUtility.getterName(fieldName));
                     Object fieldValue = getter.invoke(object);
                     map.put(fieldName, fieldValue);
                 } catch (Exception e) {

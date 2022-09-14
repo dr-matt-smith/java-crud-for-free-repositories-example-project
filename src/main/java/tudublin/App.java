@@ -6,25 +6,54 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.ResultSet;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.stream.Stream;
 
 public class App 
 {
 
     public static void main( String[] args )
     {
-        ProductRepository productRepository = new ProductRepository();
-        System.out.println(productRepository);
-        productRepository.fred();
+        try {
+            System.out.println("---- MODULES -----");
+            ModuleRepository moduleRepository = new ModuleRepository();
+            Module[] modules = moduleRepository.findAll(Module.class);
+            for(Module module: modules){
+                System.out.println(module);
+            }
+
+            System.out.println("---- PRODUCTS -----");
+            ProductRepository productRepository = new ProductRepository();
+            Product[] products = productRepository.findAll(Product.class);
+            for(Product product: products){
+                System.out.println(product);
+            }
 
 
-        System.out.println( "Hello World!" );
+        } catch (Exception e) {
+            System.out.println("main() :: Exception! " + e.getMessage());
+        }
 
-        DatabaseManager dataBaseManager = new DatabaseManager();
-        Connection conn = dataBaseManager.getDbh();
-        testDbConnection(conn);
+//        ProductRepository2 productRepository = new ProductRepository2();
+//        System.out.println(productRepository);
+//        productRepository.fred();
+
+//
+//        System.out.println( "Hello World!" );
+
+//        DatabaseManager dataBaseManager = new DatabaseManager();
+//        Connection conn = dataBaseManager.getDbh();
+//        testDbConnection(conn);
+//
+
+
+//        Object objects[] = moduleRepository.findAll();
+//        System.out.println(objects[0]);
 
         System.out.println("finished!-------");
         System.exit(0);
+
     }
 
 
@@ -68,6 +97,9 @@ public class App
 //                rs = statement.getResultSet();
 //            }
 
+            System.out.println("-1- before RS loop ----");
+
+
             // Now do something with the ResultSet ....
             while (resultset.next()) {
 
@@ -84,6 +116,8 @@ public class App
 
                 System.out.println(product);
             }
+            System.out.println("-2- after RS loop ----");
+
         }
         catch (SQLException ex){
             // handle any errors

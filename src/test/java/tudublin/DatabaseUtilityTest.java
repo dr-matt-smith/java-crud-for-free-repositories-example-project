@@ -17,7 +17,7 @@ public class DatabaseUtilityTest
     {
         // Arrange
         DatabaseUtility databaseUtility = new DatabaseUtility();
-        String type1 = "int";
+        Object type1 = Integer.TYPE;
         String expectedResult = "int";
         // Act
         String dataType1 = databaseUtility.dbDataType(type1);

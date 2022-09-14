@@ -136,19 +136,38 @@ public class DatabaseUtility
      */
     public String dbDataType(Object javaType)
     {
-        if(javaType instanceof Double)
+        if(javaType.equals(Double.TYPE))
             return "float";
 
-        if(javaType instanceof Float)
+        if(javaType.equals(Float.TYPE))
             return "float";
 
-        if(javaType instanceof Integer)
+        if(javaType.equals(Boolean.TYPE))
+            return "tinyint";
+
+        if(javaType.equals(Integer.TYPE))
             return "int";
 
-        if(javaType instanceof String)
+        if(javaType.equals(String.class))
             return "text";
 
+        return "text";
+
     }
+
+
+    /**
+     * given field name, return set method name
+     *
+     * e.g.
+     * name -> getName
+     * age -> getAge
+     */
+    public String setterMethodName(String fieldName)
+    {
+        return "set" + firstLetterCapitalize(fieldName);
+    }
+
 
     /**
      * given LinkedhasMap of field names output comma separate list, with equals-colon syntax
@@ -170,7 +189,7 @@ public class DatabaseUtility
 
         for (Map.Entry<String, String> entry : sqlTypesMap.entrySet()) {
             String key = (String) entry.getKey();
-            String type = (String) entry.getValue();
+            String type = (String) entry.getValue().toString();
 
             strings.add(key + " " + type);
         }
