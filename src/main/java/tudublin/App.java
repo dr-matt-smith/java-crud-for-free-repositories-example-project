@@ -1,51 +1,35 @@
 package tudublin;
 
-import mattsmithdev.pdocrudrepo.*;
-
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.sql.ResultSet;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.stream.Stream;
-
-public class App 
+public class App
 {
-
     public static void main( String[] args )
     {
-//        setupTables();
-        listModules();
-
-        System.out.println("finished!-------");
-        System.exit(0);
-    }
-
-    public static void setupTables()
-    {
         try {
-            System.out.println("---- MODULES -----");
             ModuleRepository moduleRepository = new ModuleRepository();
+
+            // (1) create table structure
             moduleRepository.createTable();
-        } catch (Exception e) {
-            System.out.println("main() :: Exception! " + e.getMessage());
-        }
-    }
 
+            // (2) insert data into table
 
-    public static void listModules() {
-        try {
+            //- ----- TODO ---------
+            //- ----- TODO ---------
+            //- ----- TODO ---------
+            //- ----- TODO ---------
+            //- ----- TODO ---------
+
+            // (3) query and loop through array of modules from DB table
             System.out.println("---- MODULES -----");
-            ModuleRepository moduleRepository = new ModuleRepository();
             Module[] modules = moduleRepository.findAll(Module.class);
             for (Module module : modules) {
                 System.out.println(module);
             }
-
         } catch (Exception e) {
-            System.out.println("main() :: Exception! " + e.getMessage());
+            System.out.println("main() :: Exception occurred!!!!!!!! " + e.getMessage());
         }
+
+        System.out.println("finished!-------");
+        System.exit(0);
     }
 }
 
