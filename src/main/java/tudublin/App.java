@@ -1,5 +1,7 @@
 package tudublin;
 
+import jdk.jpackage.internal.MacDmgBundler;
+
 public class App
 {
     public static void main( String[] args )
@@ -44,6 +46,12 @@ public class App
                     System.out.println(module);
                 }
             }
+
+            // test find(id)
+            System.out.println("--- find object with id = 2---");
+            Module moduleWithId3 = moduleRepository.find(Module.class, 2);
+            System.out.println(moduleWithId3);
+
         } catch (Exception e) {
             System.out.println("main() :: Exception occurred!!!!!!!! " + e.getMessage());
         }

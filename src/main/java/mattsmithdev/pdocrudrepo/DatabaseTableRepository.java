@@ -317,29 +317,94 @@ public class DatabaseTableRepository
     }
 
 
-    public void find(int id)
+    public <T> T find(Class<T> clazz, int id) throws Exception
     {
+        T object = clazz.getDeclaredConstructor().newInstance();
+
         DatabaseManager dataBaseManager = new DatabaseManager(silent);
         Connection connection = dataBaseManager.getDbh();
 
+        String sql = "";
+        PreparedStatement statement;
+
         try {
-            String sql = "SELECT * from :table WHERE id=:id";
+            sql = "SELECT * from :table WHERE id=:id";
             sql = sql.replace(":table", this.tableName);
-            sql = sql.replace(":id", ""+id);
-
-            PreparedStatement statement = connection.prepareStatement(sql);
-//            statement.setString(1, this.tableName);
-//            statement.setInt(2, id);
+            sql = sql.replace(":id", id+"");
+            statement = connection.prepareStatement(sql);
             statement.execute(sql);
-            ResultSet resultset = statement.executeQuery();
 
-            // ?? success ?? what value of "i"
+//            sql = statement.toString();
+            ResultSet resultset = statement.executeQuery();
+            //----- RS to objects ----
+            ArrayList<T> objectArrayList = new ArrayList<T>();
+
+
+            while(resultset.next())
+            {
+                object = clazz.getDeclaredConstructor().newInstance();
+
+                // "set" each field from RS
+                Field[] fields = clazz.getDeclaredFields();
+
+                DatabaseUtility dbUtility = new DatabaseUtility();
+
+                for (Field field : fields)
+                {
+                    String fieldName = field.getName();
+                    Object fieldType = field.getType();
+                    String setterMethodName = dbUtility.setterMethodName(fieldName);
+                    Method setterMethod;
+
+
+//                    String mySQLtype = dbUtility.dbDataType(fieldType);
+
+                    if(fieldType.equals(Double.TYPE))
+                    {
+                        double value = resultset.getDouble(fieldName);
+                        setterMethod = clazz.getMethod(setterMethodName, double.class);
+                        setterMethod.invoke(object, value);
+                    }
+
+                    if(fieldType.equals(Float.TYPE))
+                    {
+                        float value = resultset.getFloat(fieldName);
+                        setterMethod = clazz.getMethod(setterMethodName, float.class);
+                        setterMethod.invoke(object, value);
+                    }
+
+                    if(fieldType.equals(Boolean.TYPE))
+                    {
+                        int valueInt = resultset.getInt(fieldName);
+                        boolean value = (valueInt == 1);
+                        setterMethod = clazz.getMethod(setterMethodName, boolean.class);
+                        setterMethod.invoke(object, value);
+                    }
+
+                    if(fieldType.equals(Integer.TYPE))
+                    {
+                        int value = resultset.getInt(fieldName);
+                        setterMethod = clazz.getMethod(setterMethodName, int.class);
+                        setterMethod.invoke(object, value);
+                    }
+
+                    if(fieldType.equals(String.class))
+                    {
+                        String value = resultset.getString(fieldName);
+                        setterMethod = clazz.getMethod(setterMethodName, String.class);
+                        setterMethod.invoke(object, value);
+                    }
+                }
+
+            }
+
 
         } catch (Exception e) {
-            System.out.println("Database error (trying to TRUNCATE table):: \n" + e.getMessage());
-
+            System.out.println("Database error (trying to SELECT from table with ID):: " + this.tableName + "\n" + e.getMessage());
+            System.out.println("SQL = " + sql);
         }
 
+        return object;
     }
 
 
