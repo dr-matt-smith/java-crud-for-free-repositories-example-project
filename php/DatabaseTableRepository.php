@@ -3,6 +3,13 @@ namespace Mattsmithdev\PdoCrudRepo;
 
 class DatabaseTableRepository
 {
+    private static bool silent = false;
+    
+    public void setSilent()
+    {
+        silent = true;
+    }
+
     /**
      * the (fully namespaced) name of the class corresponding to the database table to be worked with
      * e.g. \MyCompany\Product
@@ -110,7 +117,7 @@ class DatabaseTableRepository
 
     public function findAll()
     {
-        $db = new DatabaseManager();
+        $db = new DatabaseManager(silent);
         $connection = $db->getDbh();
 
         $sql = 'SELECT * from :table';
@@ -126,7 +133,7 @@ class DatabaseTableRepository
 
     public function find($id)
     {
-        $db = new DatabaseManager();
+        $db = new DatabaseManager(silent);
         $connection = $db->getDbh();
 
         $sql = 'SELECT * from :table WHERE id=:id';
@@ -154,7 +161,7 @@ class DatabaseTableRepository
 
     public function delete($id)
     {
-        $db = new DatabaseManager();
+        $db = new DatabaseManager(silent);
         $connection = $db->getDbh();
 
         $sql = 'DELETE from :table WHERE id=:id';
@@ -178,7 +185,7 @@ class DatabaseTableRepository
 
     public function deleteAll()
     {
-        $db = new DatabaseManager();
+        $db = new DatabaseManager(silent);
         $connection = $db->getDbh();
 
         $sql = 'TRUNCATE TABLE :table';
@@ -196,7 +203,7 @@ class DatabaseTableRepository
     {
 //        $columnName = filter_var($columnName, FILTER_SANITIZE_STRING);
 
-        $db = new DatabaseManager();
+        $db = new DatabaseManager(silent);
         $connection = $db->getDbh();
 
         // wrap wildcard '%' around the serach text for the SQL query
@@ -226,7 +233,7 @@ class DatabaseTableRepository
      */
     public function insert($object)
     {
-        $db = new DatabaseManager();
+        $db = new DatabaseManager(silent);
         $connection = $db->getDbh();
 
         $objectAsArrayForSqlInsert = DatatbaseUtility::objectToArrayLessId($object);
@@ -274,7 +281,7 @@ class DatabaseTableRepository
     {
         $id = $object->getId();
 
-        $db = new DatabaseManager();
+        $db = new DatabaseManager(silent);
         $connection = $db->getDbh();
 
         $objectAsArrayForSqlInsert = DatatbaseUtility::objectToArrayLessId($object);
@@ -303,7 +310,7 @@ class DatabaseTableRepository
      */
     public function dropTable()
     {
-        $db = new DatabaseManager();
+        $db = new DatabaseManager(silent);
         $connection = $db->getDbh();
 
         $sql = 'DROP TABLE IF EXISTS :table';
@@ -344,7 +351,7 @@ EXAMPLE OF SQL needed in Entity class:
             $sql = $this->getSqlToCreateTable();
         }
         try{
-            $db = new DatabaseManager();
+            $db = new DatabaseManager(silent);
             $connection = $db->getDbh();
 
             $statement = $connection->prepare($sql);

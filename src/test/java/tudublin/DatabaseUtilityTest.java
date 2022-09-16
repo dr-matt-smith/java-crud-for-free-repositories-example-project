@@ -149,4 +149,24 @@ public class DatabaseUtilityTest
         assertEquals(mapExpected, productAsMapLessId);
     }
 
+    @Test
+    public void testGetId()
+    {
+        // Arrange
+        Product product = new Product();
+        product.setId(1);
+        product.setDescription("fred");
+        product.setPrice(9.99);
+
+        LinkedHashMap<String, String> mapExpected = new LinkedHashMap<>();
+        mapExpected.put("description", "'fred'");
+        mapExpected.put("price", "9.99");
+
+        // Act
+        LinkedHashMap<String, String> productAsMapLessId = DatabaseUtility.objectToMapLessId(product);
+
+        // Assert
+        assertEquals(mapExpected, productAsMapLessId);
+    }
+
 }

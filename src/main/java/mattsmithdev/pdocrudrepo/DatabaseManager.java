@@ -22,7 +22,7 @@ public class DatabaseManager
     private Connection dbh;
     private String error;
 
-    public DatabaseManager()
+    public DatabaseManager(boolean silent)
     {
         this.loadCredentialsFromDotEnv();
 
@@ -64,7 +64,9 @@ public class DatabaseManager
         } catch (SQLException e) {
             if(this.databaseExistsSQLException(e)){
                 // database already exists - all good
-                System.out.println("(DatabaseManager) using database '" + this.dbname + "'");
+                if(!silent){
+                    System.out.println("(DatabaseManager) using database '" + this.dbname + "'");
+                }
                 success = true;
 
             } else {

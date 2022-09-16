@@ -123,6 +123,46 @@ public class DatabaseUtility
         return map;
     }
 
+    /**
+     * given an object reference, invoke it's getId() method and return that integer
+     */
+    public static <T> int getId(T object)
+    {
+        int id = -1;
+        try {
+            Class<?> clazz = object.getClass();
+            Method getter = clazz.getMethod("getId");
+            id = (int)getter.invoke(object);
+
+        } catch (Exception e) {
+            System.out.println("DatabaseUtilities.getId() - error, can't invoke getId() on object");
+            System.out.println(object);
+            System.out.println(e.getMessage());
+        }
+
+        return id;
+    }
+
+    /**
+     * given an object reference and an integer, invoke setId() with the integer
+     */
+    public static <T> boolean setId(T object, int id)
+    {
+        try {
+            Class<?> clazz = object.getClass();
+            Method setterMethod = clazz.getDeclaredMethod("setId", int.class);
+            Object[] args = {id};
+            setterMethod.invoke(object, args);
+
+        } catch (Exception e) {
+            System.out.println("DatabaseUtilit  ies.getId() - error, can't invoke getId() on object");
+            System.out.println(object);
+            System.out.println(e.getMessage());
+        }
+
+        return (id == DatabaseUtility.getId(object));
+    }
+
     public static String hashMapValuesString(LinkedHashMap<String, String> objectAsHashMap)
     {
         // all values in hashmap into String List
@@ -131,6 +171,35 @@ public class DatabaseUtility
         String sql = String.join(", ", strings);
         return "VALUES (" + sql + ")";
     }
+
+    /**
+     * given a hashmap of field names (String) and values return field=value string
+     * suitale for use in an SQL UPDATE statement
+     *
+     * e.g.
+     * input:
+     *  hashmap<String, String> =
+     *          "price" => "9.99",
+     *          "description" => "'hammer'"
+     *
+     *  outputs:
+     *          price = 9.99, description = 'hammer'
+     */
+    public static String objectMapToUpdateString(LinkedHashMap<String, String> objectAsHashMap)
+    {
+        List<String> strings = new LinkedList<>();
+
+        for (Map.Entry<String, String> entry : objectAsHashMap.entrySet()) {
+            String key = entry.getKey();
+            String value = entry.getValue();
+
+            strings.add(key + " = " + value);
+        }
+
+        String sql = String.join(", ", strings);
+        return sql;
+    }
+
 
 
     /**

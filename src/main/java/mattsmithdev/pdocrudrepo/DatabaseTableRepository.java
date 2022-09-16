@@ -27,6 +27,13 @@ import java.lang.reflect.*;
 
 public class DatabaseTableRepository
 {
+    private boolean silent = false;
+
+    public void setSilent()
+    {
+        silent = true;
+    }
+    
     /**
      * the (fully package namespaced) name of the class corresponding to the database table to be worked with
      * e.g. mycompany.Product
@@ -164,7 +171,7 @@ public class DatabaseTableRepository
 
 //    public Object[] findAll2()
 //    {
-//        DatabaseManager dataBaseManager = new DatabaseManager();
+//        DatabaseManager dataBaseManager = new DatabaseManager(silent);
 //        Connection connection = dataBaseManager.getDbh();
 //
 //        String sql = "SELECT * from :table";
@@ -225,7 +232,7 @@ public class DatabaseTableRepository
     public <T> T[] findAll(Class<T> clazz) throws Exception
     {
         Object[] objects = new Object[1000];
-        DatabaseManager dataBaseManager = new DatabaseManager();
+        DatabaseManager dataBaseManager = new DatabaseManager(silent);
         Connection connection = dataBaseManager.getDbh();
 
         String sql = "";
@@ -312,7 +319,7 @@ public class DatabaseTableRepository
 
     public void find(int id)
     {
-        DatabaseManager dataBaseManager = new DatabaseManager();
+        DatabaseManager dataBaseManager = new DatabaseManager(silent);
         Connection connection = dataBaseManager.getDbh();
 
         try {
@@ -345,7 +352,7 @@ public class DatabaseTableRepository
 
     public void delete(int id)
     {
-        DatabaseManager dataBaseManager = new DatabaseManager();
+        DatabaseManager dataBaseManager = new DatabaseManager(silent);
         Connection connection = dataBaseManager.getDbh();
 
         try {
@@ -377,7 +384,7 @@ public class DatabaseTableRepository
 
     public void deleteAll()
     {
-        DatabaseManager dataBaseManager = new DatabaseManager();
+        DatabaseManager dataBaseManager = new DatabaseManager(silent);
         Connection connection = dataBaseManager.getDbh();
 
         try {
@@ -401,7 +408,7 @@ public class DatabaseTableRepository
 //    {
 ////        columnName = filter_var(columnName, FILTER_SANITIZE_STRING);
 //
-//        db = new DatabaseManager();
+//        db = new DatabaseManager(silent);
 //        connection = db.getDbh();
 //
 //        // wrap wildcard '%' around the serach text for the SQL query
@@ -426,9 +433,13 @@ public class DatabaseTableRepository
     /**
      * insert new record into the DB table
      * returns new record ID if insertion was successful, otherwise -1
+     *
+     * @TODO: get setId working - get ID from AUTO_INCREMENT insert
      */
-    public <T> void insert(T object) {
-        DatabaseManager dataBaseManager = new DatabaseManager();
+    public <T> boolean insert(T object)
+    {
+        boolean success = false;
+        DatabaseManager dataBaseManager = new DatabaseManager(silent);
         Connection connection = dataBaseManager.getDbh();
 
         String sql = "";
@@ -448,23 +459,37 @@ public class DatabaseTableRepository
         sql = sql.replace(":valuesFieldList", valuesFieldList);
 
         try {
+            int id = -99;
             statement = connection.prepareStatement(sql);
-            int row = statement.executeUpdate(sql);
+//            int id = statement.executeUpdate(sql, Statement.RETURN_GENERATED_KEYS);
+            statement.executeUpdate(sql, Statement.RETURN_GENERATED_KEYS);
+
+            ResultSet rs = statement.getGeneratedKeys();
+            if (rs.next()) {
+                id = rs.getInt(1);
+            }
+
+
+
+            success = DatabaseUtility.setId(object, id);
+
         } catch (Exception e) {
             System.out.println("Database error (trying to INSERT a record):: \n" + e.getMessage());
             System.out.println("SQL = " + sql);
         }
+
+        return success;
     }
 
     /**
      * given an array of object, loop through them and insert them each into the DB table
      */
-//    public void insertMany(<T> T[])
-//    {
-//        for(Object object: objects){
-//            this.insert(object);
-//        }
-//    }
+    public <T> void insertMany(T[] objects)
+    {
+        for(T object: objects){
+            this.insert(object);
+        }
+    }
 
 
     /**
@@ -474,42 +499,37 @@ public class DatabaseTableRepository
      * @param object
      *
      * @return bool
+     *
+     * SQL
+     * UPDATE Customers
+     *  SET ContactName = 'Alfred Schmidt', City= 'Frankfurt'
+     *  WHERE CustomerID = 1;
      */
-    public void update(Object object)
+    public <T> void update(T object)
     {
-//        int id = object.getId();
-//
-//        DatabaseManager dataBaseManager = new DatabaseManager();
-//        Connection connection = dataBaseManager.getDbh();
-//
-//        objectAsArrayForSqlInsert = DatatbaseUtility::objectToArrayLessId(object);
-//        fields = array_keys(objectAsArrayForSqlInsert);
-//        updateFieldList = DatatbaseUtility::fieldListToUpdateString(fields);
-//
-//        String sql = "UPDATE :table SET :updateFieldList WHERE id=:id";
-//        sql = sql.replace(":table", this.tableName);
-//        sql = sql.replace(":updateFieldList", updateFieldList);
-//
-//
-//        try {
-//            statement = connection.createStatement();
-//            statement.execute(sql);
-//
-//        } catch (Exception e) {
-//            System.out.println("Database error:: \n" + e.getMessage());
-//
-//        }
-//
-//
-//
-//        statement = connection.prepare(sql);
-//        Statement statement = null;
-//
-//        // add 'id' to parameters array
-//        objectAsArrayForSqlInsert['id'] = id;
-//
-//        queryWasSuccessful = statement.execute(objectAsArrayForSqlInsert);
+        DatabaseManager dataBaseManager = new DatabaseManager(silent);
+        Connection connection = dataBaseManager.getDbh();
 
+        PreparedStatement statement;
+
+        int id = DatabaseUtility.getId(object);
+        LinkedHashMap<String, String> objectAsMapLessId = DatabaseUtility.objectToMapLessId(object);
+
+        String updateFieldList = DatabaseUtility.objectMapToUpdateString(objectAsMapLessId);
+
+
+        String sql = "UPDATE :table SET :updateFieldList WHERE id=:id";
+        sql = sql.replace(":id", id+"");
+        sql = sql.replace(":table", this.tableName);
+        sql = sql.replace(":updateFieldList", updateFieldList);
+
+        try {
+            statement = connection.prepareStatement(sql);
+            int row = statement.executeUpdate(sql);
+        } catch (Exception e) {
+            System.out.println("Database error (trying to UPDATE a record):: \n" + e.getMessage());
+            System.out.println("SQL = " + sql);
+        }
 
 
     }
@@ -522,7 +542,7 @@ public class DatabaseTableRepository
      */
     public void dropTable()
     {
-        DatabaseManager dataBaseManager = new DatabaseManager();
+        DatabaseManager dataBaseManager = new DatabaseManager(silent);
         Connection connection = dataBaseManager.getDbh();
 
         try {
@@ -570,7 +590,7 @@ EXAMPLE OF SQL needed in Entity class:
                 System.out.println("DatabaseTableRepository.createTable() :: Database error \n" + e.getMessage());
             }
 
-        DatabaseManager dataBaseManager = new DatabaseManager();
+        DatabaseManager dataBaseManager = new DatabaseManager(silent);
         Connection connection = dataBaseManager.getDbh();
 
         try {

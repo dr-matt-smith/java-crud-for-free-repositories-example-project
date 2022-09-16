@@ -6,20 +6,31 @@ public class App
     {
         try {
             ModuleRepository moduleRepository = new ModuleRepository();
+            moduleRepository.setSilent();
 
             // (1) create table structure
-//            moduleRepository.createTable();
+            moduleRepository.resetTable();
 
             // (2) insert data into table
 
             Module m1 = new Module();
-            m1.setDescription("interactive multimedia");
+            m1.setDescription("interactive year 3 AI");
             moduleRepository.insert(m1);
-            //- ----- TODO ---------
-            //- ----- TODO ---------
-            //- ----- TODO ---------
-            //- ----- TODO ---------
-            //- ----- TODO ---------
+
+            Module m2 = new Module();
+            m2.setDescription("OOP");
+
+            Module m3 = new Module();
+            m3.setDescription("GUI programming");
+
+            Module[] modulesForInsert = new Module[2];
+            modulesForInsert[0] = m2;
+            modulesForInsert[1] = m3;
+            moduleRepository.insertMany(modulesForInsert);
+
+            // demo update
+            m3.setDescription("GUI programming - version 2");
+            moduleRepository.update(m3);
 
             // (3) query modules in DB table
             System.out.println("---- MODULES -----");
