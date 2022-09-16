@@ -162,48 +162,47 @@ public class DatabaseTableRepository
     }
 
 
-    public Object[] findAll2()
-    {
-        DatabaseManager dataBaseManager = new DatabaseManager();
-        Connection connection = dataBaseManager.getDbh();
-
-        String sql = "SELECT * from :table";
-        PreparedStatement statement;
-
-        try {
-            sql = sql.replace(":table", this.tableName);
-            statement = connection.prepareStatement(sql);
-//            statement.setString(1, this.tableName);
-            statement.execute(sql);
-
-            sql = statement.toString();
-            ResultSet resultset = statement.executeQuery();
-
-            // ?? success ?? what value of "i"
-
-        } catch (Exception e) {
-            System.out.println("Database error (trying to SELECT from table):: " + this.tableName + "\n" + e.getMessage());
-            System.out.println("SQL = " + sql);
-        }
-
-        Object[] objects = new Object[1];
-        objects[0] = new Object();
-
-        return objects;
-    }
+//    public Object[] findAll2()
+//    {
+//        DatabaseManager dataBaseManager = new DatabaseManager();
+//        Connection connection = dataBaseManager.getDbh();
+//
+//        String sql = "SELECT * from :table";
+//        PreparedStatement statement;
+//
+//        try {
+//            sql = sql.replace(":table", this.tableName);
+//            statement = connection.prepareStatement(sql);
+////            statement.setString(1, this.tableName);
+//            statement.execute(sql);
+//
+//            sql = statement.toString();
+//            ResultSet resultset = statement.executeQuery();
+//
+//            // ?? success ?? what value of "i"
+//
+//        } catch (Exception e) {
+//            System.out.println("Database error (trying to SELECT from table):: " + this.tableName + "\n" + e.getMessage());
+//            System.out.println("SQL = " + sql);
+//        }
+//
+//        Object[] objects = new Object[1];
+//        objects[0] = new Object();
+//
+//        return objects;
+//    }
 
 
     /**
      * https://stackoverflow.com/questions/2127318/java-how-can-i-do-dynamic-casting-of-a-variable-from-one-type-to-another
      *
      */
-    private <T> T castObject(Class<T> clazz, Object object) {
-        return (T) object;
-    }
+//    private <T> T castObject(Class<T> clazz, Object object) {
+//        return (T) object;
+//    }
 
     /**
      *
-     * @return
      */
     public <T> T[] entityObjects(Class<T> clazz, Object[] objects)
     {
@@ -217,39 +216,40 @@ public class DatabaseTableRepository
         return entities;
     }
 
+    /**
+     * return an array of objects for the class given as the parameter
+     *
+     * e.g.
+     * Module modules = repo.findAll(Module.class)
+     */
     public <T> T[] findAll(Class<T> clazz) throws Exception
     {
-
-
-//        ArrayList<Object> objects = new ArrayList<Object>();
-
         Object[] objects = new Object[1000];
         DatabaseManager dataBaseManager = new DatabaseManager();
         Connection connection = dataBaseManager.getDbh();
 
-        String sql = "SELECT * from :table";
+        String sql = "";
         PreparedStatement statement;
 
         try {
+            sql = "SELECT * from :table";
             sql = sql.replace(":table", this.tableName);
             statement = connection.prepareStatement(sql);
-//            statement.setString(1, this.tableName);
             statement.execute(sql);
 
-//            System.out.println("SQL = " + sql);
-
-
-            sql = statement.toString();
+//            sql = statement.toString();
             ResultSet resultset = statement.executeQuery();
             //----- RS to objects ----
             ArrayList<T> objectArrayList = new ArrayList<T>();
 
-            DatabaseUtility dbUtility = new DatabaseUtility();
             while(resultset.next()){
                 T object = clazz.getDeclaredConstructor().newInstance();
 
                 // "set" each field from RS
                 Field[] fields = clazz.getDeclaredFields();
+
+                DatabaseUtility dbUtility = new DatabaseUtility();
+
                 for (Field field : fields) {
                     String fieldName = field.getName();
                     Object fieldType = field.getType();
@@ -294,49 +294,20 @@ public class DatabaseTableRepository
                         setterMethod = clazz.getMethod(setterMethodName, String.class);
                         setterMethod.invoke(object, value);
                     }
-
-
                 }
-
-
-
+                
                 objectArrayList.add(object);
             }
 
             objects = objectArrayList.toArray();
-
-
-
 
         } catch (Exception e) {
             System.out.println("Database error (trying to SELECT from table):: " + this.tableName + "\n" + e.getMessage());
             System.out.println("SQL = " + sql);
         }
 
-
-        // convert ArrayList to Array
-//        return objects.toArray(new Object[0]);
         return entityObjects(clazz, objects);
     }
-
-//
-//    public Module[] resultSetToObjects(ResultSet rs, Class<T> clazz) throws Exception
-//    {
-//        Class<?> clazz2 = Class.forName(this.qualifiedClassName);
-//
-//        ArrayList<Module> objects = new ArrayList<Module>();
-//
-//
-//        while(rs.next()){
-//            Module module = new Module();
-//            module.setId(rs.getInt("id"));
-//            module.setDescription(rs.getString("description"));
-//
-//            objects.add(module);
-//        }
-//
-//        return objects.toArray(new Module[0]);
-//    }
 
 
     public void find(int id)
@@ -399,7 +370,7 @@ public class DatabaseTableRepository
 
 
     /**
-     * delete all records- return true/false depending on delete success
+     * delete all records - return true/false depending on delete success
      *
      * @return bool
      */
@@ -437,8 +408,8 @@ public class DatabaseTableRepository
 //        searchText = '%' . searchText . '%';
 //
 //        sql = 'SELECT * from :table WHERE :column LIKE :searchText';
-//        sql = str_replace(':table', this.tableName, sql);
-//        sql = str_replace(':column', columnName, sql);
+//        sql = replace(':table', this.tableName, sql);
+//        sql = replace(':column', columnName, sql);
 //
 //        statement = connection.prepare(sql);
 ////        statement.bindParam(':column', columnName, \PDO::PARAM_STR);
@@ -456,40 +427,44 @@ public class DatabaseTableRepository
      * insert new record into the DB table
      * returns new record ID if insertion was successful, otherwise -1
      */
-    public void insert(Object object)
-    {
-//        db = new DatabaseManager();
-//        connection = db.getDbh();
-//
-//        objectAsArrayForSqlInsert = DatatbaseUtility::objectToArrayLessId(object);
-//        fields = array_keys(objectAsArrayForSqlInsert);
-//        insertFieldList = DatatbaseUtility::fieldListToInsertString(fields);
-//        valuesFieldList = DatatbaseUtility::fieldListToValuesString(fields);
-//
-//        sql = 'INSERT into :table :insertFieldList :valuesFieldList';
-//        sql = str_replace(':table', this.tableName, sql);
-//        sql = str_replace(':insertFieldList', insertFieldList, sql);
-//        sql = str_replace(':valuesFieldList', valuesFieldList, sql);
-//
-//        statement = connection.prepare(sql);
-//        statement.execute(objectAsArrayForSqlInsert);
-//        queryWasSuccessful = (statement.rowCount() > 0);
-//        if(queryWasSuccessful) {
-//            return connection.lastInsertId();
-//        } else {
-//            return -1;
-//        }
+    public <T> void insert(T object) {
+        DatabaseManager dataBaseManager = new DatabaseManager();
+        Connection connection = dataBaseManager.getDbh();
+
+        String sql = "";
+        PreparedStatement statement;
+
+        Field[] fields = object.getClass().getDeclaredFields();
+        String[] fieldNames = DatabaseUtility.fieldNamesLessId(fields);
+        String insertFieldList = DatabaseUtility.fieldListToInsertString(fieldNames);
+
+        LinkedHashMap<String, String> objectAsMapLessId = DatabaseUtility.objectToMapLessId(object);
+
+        String valuesFieldList = DatabaseUtility.hashMapValuesString(objectAsMapLessId);
+
+        sql = "INSERT into :table :insertFieldList :valuesFieldList";
+        sql = sql.replace(":table", this.tableName);
+        sql = sql.replace(":insertFieldList", insertFieldList);
+        sql = sql.replace(":valuesFieldList", valuesFieldList);
+
+        try {
+            statement = connection.prepareStatement(sql);
+            int row = statement.executeUpdate(sql);
+        } catch (Exception e) {
+            System.out.println("Database error (trying to INSERT a record):: \n" + e.getMessage());
+            System.out.println("SQL = " + sql);
+        }
     }
 
     /**
      * given an array of object, loop through them and insert them each into the DB table
      */
-    public void insertMany(Object[] objects)
-    {
-        for(Object object: objects){
-            this.insert(object);
-        }
-    }
+//    public void insertMany(<T> T[])
+//    {
+//        for(Object object: objects){
+//            this.insert(object);
+//        }
+//    }
 
 
     /**
@@ -634,8 +609,8 @@ EXAMPLE OF SQL needed in Entity class:
     }
 
     /**
-     * @return string
-     * @throws \ReflectionException
+     * return string
+     * throws \ReflectionException
      *
      * return SQL table creation string such as:
      *  CREATE TABLE IF NOT EXISTS movie (
@@ -676,32 +651,32 @@ EXAMPLE OF SQL needed in Entity class:
         return sql;
     }
 
-    public static LinkedHashMap<String, Object> objectToMapLessId(Object object)
-    {
-        LinkedHashMap<String, Object> map = new LinkedHashMap<>();
-
-        Class<?> clazz = object.getClass();
-        Field[] fields = clazz.getDeclaredFields();
-
-        List<?> list; // from your method
-        for (Field field : fields) {
-            String fieldName = field.getName();
-
-            // ignore id field
-            if(fieldName != "id"){
-                try {
-                    Method getter = clazz.getMethod(DatabaseUtility.getterName(fieldName));
-                    Object fieldValue = getter.invoke(object);
-                    map.put(fieldName, fieldValue);
-                } catch (Exception e) {
-                    System.out.println("exception occurred objectToArrayMapLessId");
-                }
-            }
-        }
-
-
-        return map;
-    }
+//    public static LinkedHashMap<String, Object> objectToMapLessId(Object object)
+//    {
+//        LinkedHashMap<String, Object> map = new LinkedHashMap<>();
+//
+//        Class<?> clazz = object.getClass();
+//        Field[] fields = clazz.getDeclaredFields();
+//
+//        List<?> list; // from your method
+//        for (Field field : fields) {
+//            String fieldName = field.getName();
+//
+//            // ignore id field
+//            if(fieldName != "id"){
+//                try {
+//                    Method getter = clazz.getMethod(DatabaseUtility.getterName(fieldName));
+//                    Object fieldValue = getter.invoke(object);
+//                    map.put(fieldName, fieldValue);
+//                } catch (Exception e) {
+//                    System.out.println("exception occurred objectToArrayMapLessId");
+//                }
+//            }
+//        }
+//
+//
+//        return map;
+//    }
 
 
 }

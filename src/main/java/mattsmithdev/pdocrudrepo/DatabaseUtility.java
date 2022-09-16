@@ -79,17 +79,79 @@ public class DatabaseUtility
         return sql;
     }
 
+
     /**
-
-
-
-
-
+     * given an object, return a hashmap of field name (String) and value for SQL insert (String)
+     * (ignoring the 'id' property)
+     *
+     * e.g.
+     * input:
+     *  object Moodule with properties:
+     *      id = 1
+     *      price = 9.99
+     *      description = "hammer"
+     *
+     *  outputs:
+     *          "price" => "9.99",
+     *          "description" => "'hammer'",
      */
 
-    public static LinkedHashMap<String, Object> objectToMapLessId(Object object)
+    public static LinkedHashMap<String, String> objectToMapLess(Object object)
     {
-        LinkedHashMap<String, Object> map = new LinkedHashMap<>();
+        LinkedHashMap<String, String> map = new LinkedHashMap<>();
+
+        Class<?> clazz = object.getClass();
+        Field[] fields = clazz.getDeclaredFields();
+
+        List<?> list; // from your method
+        for (Field field : fields) {
+            String fieldName = field.getName();
+
+           try {
+                Method getter = clazz.getMethod(getterName(fieldName));
+                String fieldValue = getter.invoke(object)+"";
+                if(field.getType() == String.class){
+                    fieldValue = "'" + fieldValue + "'";
+                }
+
+                map.put(fieldName, fieldValue);
+            } catch (Exception e) {
+                System.out.println("exception occurred objectToArrayMapLessId");
+            }
+        }
+
+        return map;
+    }
+
+    public static String hashMapValuesString(LinkedHashMap<String, String> objectAsHashMap)
+    {
+        // all values in hashmap into String List
+        List<String> strings = new LinkedList<>(objectAsHashMap.values());
+
+        String sql = String.join(", ", strings);
+        return "VALUES (" + sql + ")";
+    }
+
+
+    /**
+     * given an object, return a hashmap of field name (String) and value for SQL insert (String)
+     * (ignoring the 'id' property)
+     *
+     * e.g.
+     * input:
+     *  object Moodule with properties:
+     *      id = 1
+     *      price = 9.99
+     *      description = "hammer"
+     *
+     *  outputs:
+     *          "price" => "9.99",
+     *          "description" => "'hammer'",
+     */
+
+    public static LinkedHashMap<String, String> objectToMapLessId(Object object)
+    {
+        LinkedHashMap<String, String> map = new LinkedHashMap<>();
 
         Class<?> clazz = object.getClass();
         Field[] fields = clazz.getDeclaredFields();
@@ -102,14 +164,17 @@ public class DatabaseUtility
             if(fieldName != "id"){
                 try {
                     Method getter = clazz.getMethod(getterName(fieldName));
-                    Object fieldValue = getter.invoke(object);
+                    String fieldValue = getter.invoke(object)+"";
+                    if(field.getType() == String.class){
+                        fieldValue = "'" + fieldValue + "'";
+                    }
+
                     map.put(fieldName, fieldValue);
                 } catch (Exception e) {
                     System.out.println("exception occurred objectToArrayMapLessId");
                 }
             }
         }
-
 
         return map;
     }
@@ -230,7 +295,7 @@ public class DatabaseUtility
      *      ['one', 'two', 'three']
      *
      * output
-     *      'value (:one, :two, :three)'
+     *      'values (:one, :two, :three)'
      *
      * param array $fields
      * return string
@@ -244,7 +309,7 @@ public class DatabaseUtility
         }
 
         String sql = String.join(", ", strings);
-        return "value (" + sql + ")";
+        return "values (" + sql + ")";
     }
 
     /**
@@ -271,6 +336,33 @@ public class DatabaseUtility
 
         String sql = String.join(", ", columns);
         return "(" + sql + ")";
+    }
+
+    public static String[] fieldNames(Field[] fields)
+    {
+        String[] fieldNames = new String[fields.length];
+        for(int i = 0; i < fields.length; i++){
+            fieldNames[i] = fields[i].getName();
+        }
+
+        return fieldNames;
+    }
+
+    public static String[] fieldNamesLessId(Field[] fields)
+    {
+        String[] fieldNames = new String[fields.length - 1];
+
+        int i = 0;
+        for(Field field: fields){
+            String fieldName = field.getName();
+            // don't add to array if current field is 'id'
+            if(!fieldName.equals("id")){
+                fieldNames[i] = fieldName;
+                i++;
+            }
+        }
+
+        return fieldNames;
     }
 
 }

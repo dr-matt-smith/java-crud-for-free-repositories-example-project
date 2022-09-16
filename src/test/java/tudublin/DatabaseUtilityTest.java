@@ -63,7 +63,7 @@ public class DatabaseUtilityTest
     {
         // Arrange
         String[] columns = {"title", "price", "category"};
-        String expectedResult = "value (:title, :price, :category)";
+        String expectedResult = "values (:title, :price, :category)";
 
         // Act
         String columnsSqlString = DatabaseUtility.fieldListToValuesString(columns);
@@ -117,12 +117,33 @@ public class DatabaseUtilityTest
         product.setDescription("fred");
         product.setPrice(9.99);
 
-        LinkedHashMap<String, Object> mapExpected = new LinkedHashMap<>();
-        mapExpected.put("description", "fred");
-        mapExpected.put("price", 9.99);
+        LinkedHashMap<String, String> mapExpected = new LinkedHashMap<>();
+        mapExpected.put("id", "1");
+        mapExpected.put("description", "'fred'");
+        mapExpected.put("price", "9.99");
 
         // Act
-        LinkedHashMap<String, Object> productAsMapLessId = DatabaseUtility.objectToMapLessId(product);
+        LinkedHashMap<String, String> productAsMapLessId = DatabaseUtility.objectToMapLess(product);
+
+        // Assert
+        assertEquals(mapExpected, productAsMapLessId);
+    }
+
+    @Test
+    public void objectToPropertyMapLessId()
+    {
+        // Arrange
+        Product product = new Product();
+        product.setId(1);
+        product.setDescription("fred");
+        product.setPrice(9.99);
+
+        LinkedHashMap<String, String> mapExpected = new LinkedHashMap<>();
+        mapExpected.put("description", "'fred'");
+        mapExpected.put("price", "9.99");
+
+        // Act
+        LinkedHashMap<String, String> productAsMapLessId = DatabaseUtility.objectToMapLessId(product);
 
         // Assert
         assertEquals(mapExpected, productAsMapLessId);

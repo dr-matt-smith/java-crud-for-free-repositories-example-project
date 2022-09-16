@@ -8,21 +8,30 @@ public class App
             ModuleRepository moduleRepository = new ModuleRepository();
 
             // (1) create table structure
-            moduleRepository.createTable();
+//            moduleRepository.createTable();
 
             // (2) insert data into table
 
+            Module m1 = new Module();
+            m1.setDescription("interactive multimedia");
+            moduleRepository.insert(m1);
             //- ----- TODO ---------
             //- ----- TODO ---------
             //- ----- TODO ---------
             //- ----- TODO ---------
             //- ----- TODO ---------
 
-            // (3) query and loop through array of modules from DB table
+            // (3) query modules in DB table
             System.out.println("---- MODULES -----");
             Module[] modules = moduleRepository.findAll(Module.class);
-            for (Module module : modules) {
-                System.out.println(module);
+
+            // (4) print contents of 'modules' array
+            if(modules.length < 1){
+                System.out.println("-- empty recordset -- no Module receords found in database");
+            } else {
+                for (Module module : modules) {
+                    System.out.println(module);
+                }
             }
         } catch (Exception e) {
             System.out.println("main() :: Exception occurred!!!!!!!! " + e.getMessage());
