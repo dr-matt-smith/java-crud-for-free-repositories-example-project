@@ -419,9 +419,10 @@ public class DatabaseTableRepository
     {
         DatabaseManager dataBaseManager = new DatabaseManager(silent);
         Connection connection = dataBaseManager.getDbh();
+        String sql = "";
 
         try {
-            String sql = "DELETE from :table WHERE id=:id";
+            sql = "DELETE from :table WHERE id=:id";
             sql = sql.replace(":id", ""+id);
             sql = sql.replace(":table", this.tableName);
             PreparedStatement statement = connection.prepareStatement(sql);
@@ -433,7 +434,9 @@ public class DatabaseTableRepository
             // ?? success ?? what value of "i"
 
         } catch (Exception e) {
-            System.out.println("Database error (trying to TRUNCATE table):: \n" + e.getMessage());
+            System.out.println("Database error (trying to DELETE from table):: " + e.getMessage());
+            System.out.println("SQL = " + sql);
+
 
         }
 
