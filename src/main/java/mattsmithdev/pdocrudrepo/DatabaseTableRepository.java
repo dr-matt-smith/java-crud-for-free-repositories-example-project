@@ -25,9 +25,9 @@ import java.lang.reflect.*;
  * https://www.digitalocean.com/community/tutorials/spring-jdbctemplate-example
  */
 
-public class DatabaseTableRepository
+public abstract class DatabaseTableRepository
 {
-    private boolean silent = false;
+    private boolean silent = true;
 
     public void setSilent()
     {
@@ -54,33 +54,20 @@ public class DatabaseTableRepository
 
     /**
      * DatabaseTableRepository constructor.
-     * param array params
-     *
-     * possible params:
-     *      'namespace' e.g. 'MyNameSpace'
-     *      'dbClass' e.g 'Movie'
-     *      'tableName' e.g. 'movie'
      *
      * assumption:
-     *      namespace of dbTable is same as namespace of repository class
-     *      repository class is dbTable name with suffix 'Repository', e.g. Movie, MovieRepository
-     *      table name is lower case version of class name, e.g. table 'movie' for class 'Movie'
+     *      namespace of dbTable ENTITY CLASS is same as namespace of repository class
+     *          e.g. tudublin.Module
+     *
+     *      REPOSITORY CLASS is dbTable name with suffix 'Repository'
+     *          e.g. tudublin.ModuleRepository
+     *
+     *      table name is lower case version of class name,
+     *          e.g. table 'movie' for ENTITY CLASS  'Movie'
      */
     public DatabaseTableRepository()
     {
-        // e.g.
-        // My\NameSpace\EntityRepository
-        //
-        // defaults are as follows:
-        // namespace = My\NameSpace - entity class in same namespace as repository class
-        // className = Entity - entity name is repository class less, less the word 'Repository'
-        // tableName = entity - table name is same as entity class name, but all in loser case
-        //
-        // IF the above 3 defaults are true,
-        // THEN the repository class does not need a constructor at all :-)
-
-        // (1) create default values
-        // namespace
+        // e.g. tudublin.ModuleRepository - this is being invoked on the subclass that extends DatabaseTableRepository
         Class<?> clazz = this.getClass();
 
         // e.g. tudubln.ModuleRepository
@@ -99,37 +86,6 @@ public class DatabaseTableRepository
         this.tableName = this.shortClassName.toLowerCase();
 
     }
-
-
-
-
-//    /**
-//     * return name of entity class - current class name less "Repository"
-//     * @param clazz
-//     * @return
-//     *
-//     * e.g. ModuleRepository . Module
-//     *
-//     * throws Exception if class name does NOT end with Repository (and starts with at least one letter before Repository)
-//     */
-//    public String getShortClassName(Class<?> clazz ) throws Exception
-//    {
-//        String suffix = "Repository";
-//        int suffixLength = suffix.length();
-//
-//        String className = clazz.getSimpleName();
-//        int length = className.length();
-//
-//        if(length < (suffixLength+1)){
-//            throw new Exception("class name must be longer than 'Repository'!");
-//        }
-//
-//        if(!className.endsWith(suffix)){
-//            throw new Exception("class name must end with 'Repository'");
-//        }
-//
-//        return className.substring(0, className.lastIndexOf(suffix));
-//    }
 
 
     public String getQualifiedClassName()
@@ -168,48 +124,8 @@ public class DatabaseTableRepository
         this.tableName = tableName;
     }
 
-
-//    public Object[] findAll2()
-//    {
-//        DatabaseManager dataBaseManager = new DatabaseManager(silent);
-//        Connection connection = dataBaseManager.getDbh();
-//
-//        String sql = "SELECT * from :table";
-//        PreparedStatement statement;
-//
-//        try {
-//            sql = sql.replace(":table", this.tableName);
-//            statement = connection.prepareStatement(sql);
-////            statement.setString(1, this.tableName);
-//            statement.execute(sql);
-//
-//            sql = statement.toString();
-//            ResultSet resultset = statement.executeQuery();
-//
-//            // ?? success ?? what value of "i"
-//
-//        } catch (Exception e) {
-//            System.out.println("Database error (trying to SELECT from table):: " + this.tableName + "\n" + e.getMessage());
-//            System.out.println("SQL = " + sql);
-//        }
-//
-//        Object[] objects = new Object[1];
-//        objects[0] = new Object();
-//
-//        return objects;
-//    }
-
-
     /**
-     * https://stackoverflow.com/questions/2127318/java-how-can-i-do-dynamic-casting-of-a-variable-from-one-type-to-another
-     *
-     */
-//    private <T> T castObject(Class<T> clazz, Object object) {
-//        return (T) object;
-//    }
-
-    /**
-     *
+     * cast array of Object objects into an array of <T> objects
      */
     public <T> T[] entityObjects(Class<T> clazz, Object[] objects)
     {
@@ -339,7 +255,6 @@ public class DatabaseTableRepository
             //----- RS to objects ----
             ArrayList<T> objectArrayList = new ArrayList<T>();
 
-
             while(resultset.next())
             {
                 object = clazz.getDeclaredConstructor().newInstance();
@@ -355,9 +270,6 @@ public class DatabaseTableRepository
                     Object fieldType = field.getType();
                     String setterMethodName = dbUtility.setterMethodName(fieldName);
                     Method setterMethod;
-
-
-//                    String mySQLtype = dbUtility.dbDataType(fieldType);
 
                     if(fieldType.equals(Double.TYPE))
                     {
@@ -395,10 +307,7 @@ public class DatabaseTableRepository
                         setterMethod.invoke(object, value);
                     }
                 }
-
             }
-
-
         } catch (Exception e) {
             System.out.println("Database error (trying to SELECT from table with ID):: " + this.tableName + "\n" + e.getMessage());
             System.out.println("SQL = " + sql);
@@ -407,14 +316,9 @@ public class DatabaseTableRepository
         return object;
     }
 
-
     /**
-     * delete record for given ID - return true/false depending on delete success
-     * @param id
-     *
-     * @return bool
+     * delete record for given ID
      */
-
     public void delete(int id)
     {
         DatabaseManager dataBaseManager = new DatabaseManager(silent);
@@ -430,16 +334,10 @@ public class DatabaseTableRepository
 //            statement.setInt(2, id);
             statement.execute(sql);
             int i = statement.executeUpdate();
-
-            // ?? success ?? what value of "i"
-
         } catch (Exception e) {
             System.out.println("Database error (trying to DELETE from table):: " + e.getMessage());
             System.out.println("SQL = " + sql);
-
-
         }
-
     }
 
 
@@ -447,7 +345,8 @@ public class DatabaseTableRepository
     /**
      * delete all records - return true/false depending on delete success
      *
-     * @return bool
+     * e.g.
+     *      TRUNCATE TABLE module
      */
 
     public void deleteAll()
@@ -465,10 +364,7 @@ public class DatabaseTableRepository
 
         } catch (Exception e) {
             System.out.println("Database error (trying to TRUNCATE table):: \n" + e.getMessage());
-
         }
-
-
     }
 
 
@@ -501,8 +397,6 @@ public class DatabaseTableRepository
     /**
      * insert new record into the DB table
      * returns new record ID if insertion was successful, otherwise -1
-     *
-     * @TODO: get setId working - get ID from AUTO_INCREMENT insert
      */
     public <T> boolean insert(T object)
     {
@@ -537,8 +431,6 @@ public class DatabaseTableRepository
                 id = rs.getInt(1);
             }
 
-
-
             success = DatabaseUtility.setId(object, id);
 
         } catch (Exception e) {
@@ -550,7 +442,7 @@ public class DatabaseTableRepository
     }
 
     /**
-     * given an array of object, loop through them and insert them each into the DB table
+     * given an array of entity objects, loop through them and insert them each into the DB table
      */
     public <T> void insertMany(T[] objects)
     {
@@ -562,16 +454,9 @@ public class DatabaseTableRepository
 
     /**
      * insert new record into the DB table
-     * returns new record ID if insertion was successful, otherwise -1
      *
-     * @param object
-     *
-     * @return bool
-     *
-     * SQL
-     * UPDATE Customers
-     *  SET ContactName = 'Alfred Schmidt', City= 'Frankfurt'
-     *  WHERE CustomerID = 1;
+     * e.g.
+     *  UPDATE module SET description VALUES (description = 'GUI programming - version 2') WHERE id=3;
      */
     public <T> void update(T object)
     {
@@ -598,15 +483,12 @@ public class DatabaseTableRepository
             System.out.println("Database error (trying to UPDATE a record):: \n" + e.getMessage());
             System.out.println("SQL = " + sql);
         }
-
-
     }
-
 
     /**
      * drop the table associated with this repository
      *
-     * @return bool
+     * DROP TABLE IF EXISTS module
      */
     public void dropTable()
     {
@@ -618,34 +500,23 @@ public class DatabaseTableRepository
             PreparedStatement statement = connection.prepareStatement(sql);
             statement.execute(sql);
             int i = statement.executeUpdate();
-
-    // ?? success ?? what value of "i"
-
         } catch (Exception e) {
             System.out.println("Database error (trying to DROP table):: \n" + e.getMessage());
-
         }
-
     }
 
     /**
      * create the table associated with this repository
      *
      * SQL - optional SQL CREATE statement
-     * DEFAULT: Look for a constant CREATE_TABLE_SQL defined in the entity class associated with this repository
      *
-     * @return bool
-     *
-EXAMPLE OF SQL needed in Entity class:
- const CREATE_TABLE_SQL =
-    <<<HERE
+
     CREATE TABLE IF NOT EXISTS movie (
-    id integer PRIMARY KEY AUTO_INCREMENT,
-    title text,
-    price float,
-    category text
+        id integer PRIMARY KEY AUTO_INCREMENT,
+        title text,
+        price float,
+        category text
     )
-    HERE;
 
      */
 
@@ -668,9 +539,9 @@ EXAMPLE OF SQL needed in Entity class:
 
             // ?? success ?? what value of "i"
         } catch (Exception e) {
-            System.out.println("*** sorry - a database error occurred ***\n");
-            System.out.println("when trying to CREATE table:: \n" + e.getMessage());
-            System.out.println("\n SQL = " + sql + "\n");
+            System.out.println("*** sorry - a database error occurred ***");
+            System.out.println("when trying to CREATE table:: " + e.getMessage());
+            System.out.println("SQL = " + sql);
 
         }
     }

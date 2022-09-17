@@ -7,7 +7,6 @@ public class App {
     public static void main(String[] args) {
         try {
             ModuleRepository moduleRepository = new ModuleRepository();
-            moduleRepository.setSilent();
 
             // (1) create/reset schema and table structure, using repo.resetTable()
             moduleRepository.resetTable();
@@ -51,6 +50,11 @@ public class App {
             Module moduleWithId3 = moduleRepository.find(Module.class, 2);
             printMessage("(6) this module found with moduleRepository.find(Module.class, 2)");
             System.out.println(moduleWithId3);
+
+            // (7) demo delete, with repo.delete(<id>)
+            int id = 2;
+            moduleRepository.delete(id);
+            printAllDatabaseModules( "(7) delete module with ID = 2");
 
         } catch (Exception e) {
             System.out.println("main() :: Exception occurred!!!!!!!! " + e.getMessage());
