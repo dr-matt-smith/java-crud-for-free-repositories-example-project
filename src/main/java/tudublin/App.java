@@ -1,7 +1,5 @@
 package tudublin;
 
-import jdk.jpackage.internal.MacDmgBundler;
-
 public class App {
     static final String DIVIDER = " ------------- ";
     public static void main(String[] args) {
