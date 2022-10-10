@@ -1,6 +1,6 @@
 # java-crud-for-free-repositories-example-project
 
-
+library soon to be an official Maven library ..... when Matt learns how to do this ...
 
 
 
