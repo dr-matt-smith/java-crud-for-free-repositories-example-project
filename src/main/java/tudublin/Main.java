@@ -12,9 +12,7 @@ public class Main {
             lecturer1.setName("matt");
             lecturerRepository.insert(lecturer1);
 
-            Lecturer lecturer2 = new Lecturer();
-            lecturer2.setName("jojo");
-            lecturerRepository.insert(lecturer2);
+            lecturerRepository.createAndInsert("Jojo");
 
             System.out.println("-- lecturers --");
             Lecturer[] lecturers = lecturerRepository.findAll(Lecturer.class);
