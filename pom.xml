@@ -14,7 +14,8 @@
   </repositories>
 
   <dependencies>
-    <dependency>
+
+        <dependency>
       <groupId>com.github.dr-matt-smith</groupId>
       <artifactId>java-crud-for-free-repositories</artifactId>
       <version>1.0</version>
