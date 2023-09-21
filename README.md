@@ -62,7 +62,7 @@ the library works by providing a powerful superclass offering DB CRUD methods
 
 for each entity class
 - add appropriate 'import' or 'use' statement after the package/namespace statement
-- for each entity create a class <Entity>Repository that subclasses (extends) the appropriat e
+- for each entity create a class <Entity>Repository that subclasses (extends) the Matt's 'magic' class: `DatabaseTableRepository` 
 
 ```java
 import mattsmithdev\pdoCrudRepo\DatabaseTableRepository;	
