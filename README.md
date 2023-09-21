@@ -8,7 +8,7 @@ Java - databasing your code
 
 download an unZIP a copy of this started project from my public Github repositories
 
-`https://github.com/dr-matt-smith/java-crud-for-free-repositories-example-project`
+https://github.com/dr-matt-smith/java-crud-for-free-repositories-example-project
 
 ---------------------------------------------
 (2) Update ".env" settings for your MySQL setup
