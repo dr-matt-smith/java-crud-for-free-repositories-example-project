@@ -2,6 +2,10 @@
 
 Java - databasing your code
 
+NOTE:
+- this project follows the Maven project structure (since it's pulling in libraries)
+- so your Java files go in `src/main/java/`
+
 ---------------------------------------------
 (1) Download copy of starter-project from Github
 ---------------------------------------------
