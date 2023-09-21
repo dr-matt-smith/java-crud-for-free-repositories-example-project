@@ -143,7 +143,7 @@ e.g. for the toString method for class Movie, with the directorId:
 
 
 ---------------------------------------------
-(9) create/update your Main.java/main.php to insert and then retrieve objects from the databasew
+(9) create/update your Main.java to insert and then retrieve objects from the databasew
 ---------------------------------------------	
 
 You can now create and use repository objects in your main class/script to store objects in the database and retrieve them
@@ -151,10 +151,15 @@ You can now create and use repository objects in your main class/script to store
 The general sequence is:
 
 (--a--) create objects for each repositry class
+
 (--b--) reset database tables with <entity>Repository.resetTable()/->resetTable()
+
 (--c--) create all your objects for the entity classes
+
 (--d--) insert the objects into the database with <entity>Repository.insert(<object>)/->insert(<object>)
+
 (--e--) retreive an array of all objecss for _each_ entity with <arrayVariale> = <entity>Repository.findAll()/->insert(<object>)
+
 (--f--) use a for/foreach-loop to loop to print out each object via its toString
 
 Examples:
