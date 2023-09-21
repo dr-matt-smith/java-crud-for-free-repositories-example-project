@@ -1,6 +1,6 @@
 {
   "scripts": {
     "build": "mvn clean package",
-    "go": "mvn exec:java -Dexec.mainClass=\"tudublin.Main\""
+    "go": "mvn exec:java"
   }
 }
