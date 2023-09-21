@@ -1,6 +1,6 @@
 # java-crud-for-free-repositories-example-project
 
-Java/PHP - databasing your code
+Java - databasing your code
 
 ---------------------------------------------
 (1) Download copy of starter-project from Github
@@ -8,35 +8,28 @@ Java/PHP - databasing your code
 
 download an unZIP a copy of this started project from my public Github repositories
 
-Java
-	https://github.com/dr-matt-smith/java-crud-for-free-repositories-example-project
-
-PHP
-	https://github.com/dr-matt-smith/2022---php-db-create-read-sample-project	
+`https://github.com/dr-matt-smith/java-crud-for-free-repositories-example-project`
 
 ---------------------------------------------
 (2) Update ".env" settings for your MySQL setup
 ---------------------------------------------
 edit the ".env" file to have your MySQL database credentials
-you can also change the name of the database to be created freom "movies20" to something else
-
+you can also change the name of the database to be created from `movies20` to something else
 
 ---------------------------------------------
-(3) locate the main.php script / setup / do a test run of this sample
+(3) locate the Main class and do a test run of this sample
 ---------------------------------------------
 
-Java
-	/src/main/java/tudublin/
+Java source (.java files) code located in: `/src/main/java/tudublin/`
 
-	you can compile your Jasva project with "composer build"
-	you can run your Java project wiht "composer go"
 
-PHP
-	/db/main.php
+Build project (compile) with: `mvn clean package`
 
-	ONCE ONLY: run "composer update" to create a "vendor" folder with downloaded required libraries
-	
-	to run the main script type "php db/main.php"
+- if you have the PHP Composer tool you can just type `composer build`
+
+
+Run your project with ``
+- if you have the PHP Composer tool you can just type `composer go`
 	
 	
 you'll be editing this main class/script to create / store in DB / read and print your own objects ...
@@ -46,15 +39,10 @@ you'll be editing this main class/script to create / store in DB / read and prin
 ---------------------------------------------
 
 (a)
-create / copy in your entity classes into the appropriate "src" folder
+create / copy in your entity classes into the appropriate `src` folder
 
-for Java:
-	folder "/src/main/java/tudublin/" 
-	package "tudublin"
-
-for PHP: 
-	folder "/src/" 
-	namespace "Tudublin"
+folder `/src/main/java/tudublin/` 
+	`package "tudublin"`
 
 (b)
 Note - my libraries don't yet work with enumerations
@@ -69,47 +57,29 @@ for each entity class
 - add appropriate 'import' or 'use' statement after the package/namespace statement
 - for each entity create a class <Entity>Repository that subclasses (extends) the appropriat e
 
+```java
+import mattsmithdev\pdoCrudRepo\DatabaseTableRepository;	
 
-	Java
-		import mattsmithdev\pdoCrudRepo\DatabaseTableRepository;	
-
-		public class <MyEntity>Repository extends DatabaseTableRepository;	
-
-	PHP
-		use Mattsmithdev\PdoCrudRepo\DatabaseTableRepository;
-
-		class <MyEntity>Repository extends DatabaseTableRepository;	
-
+public class <MyEntity>Repository extends DatabaseTableRepository;	
+```
 	
 e.g. for the Movie entity class we create a MovieRepository class as follows:
 
-Java
-	packge Tudublin;
+```java
+packge Tudublin;
 
-	import mattsmithdev.pdocrudrepo.DatabaseTableRepository;
-	
-	public class MovieRepository extends DatabaseTableRepository
-	{
-		// just inheritied methods for now
-	}
+import mattsmithdev.pdocrudrepo.DatabaseTableRepository;
 
-
-PHP
-	<?php
-	namespace Tudublin;
-
-	use Mattsmithdev\PdoCrudRepo\DatabaseTableRepository;
-
-	class MovieRepository extends DatabaseTableRepository
-	{
-		// just inheritied methods for now
-	}
-
+public class MovieRepository extends DatabaseTableRepository
+{
+	// just inheritied methods for now
+}
+```
 
 ---------------------------------------------
-(6) add an "int ($)id" to every entity
+(6) add an "int id" to every entity
 ---------------------------------------------
-the db-crud library requires _every_ entity to have an integer "id" primary key property
+the db-crud library requires _every_ entity to have an integer `id` primary key property
 this allows the MySQL database to manage AUTO INCREMENTED primary keys for each database table row
 
 ---------------------------------------------
@@ -121,19 +91,19 @@ we have manually convert object associations into foreign key "id" properties
 change object properties to "<object>Id" properties
 	
 e.g. If the Movie entity is associated to a Directory entity with a "director" property in Movie
-we change this to "int ($)directorId"
+we change this to "int directorId"
 
 (--b--)
 add/generate get/set methods for the <objectId> properties
 	
-e.g. for our Movie.directorId/Movie->directorId example: 
+e.g. for our Movie.directorId example: 
 	we add getDirectorId() and setDirectorId()
 	
 
 (--c--)
 delete any old set<Entity>(...) method
 	
-e.g. for our Movie.directorId/Movie->directorId example: 
+e.g. for our Movie.directorId example: 
 	we delete method setDirector(...)
 	
 
@@ -142,28 +112,18 @@ replace the contents / create a getEntity() method for the associated object
 
 we can use the related entity's Repository class, with the foreign key ID to retrieve the associated object
 
-e.g. for our MMovie.directorId/Movie->directorId example: 
+e.g. for our MMovie.directorId example: 
 	we replace the oldl getDirector() method with the following,using the foreign key ID
 	
-	
-Java
-    public Director getDirector()
-    {
-        DirectorRepository directorRepository = new DirectorRepository();
-        Director director = directorRepository.find(this.directorId);
+```java
+public Director getDirector()
+{
+DirectorRepository directorRepository = new DirectorRepository();
+Director director = directorRepository.find(this.directorId);
 
-        return director;
-    }
-	
-	
-PHP	
-    public function getDirector(): Director
-    {
-        $directorRepository = new DirectorRepository();
-        $director = $directorRepository->find($this->directorId);
-
-        return $director;
-    }
+return director;
+}
+```
 
 ---------------------------------------------
 (8) for associated object properties update your (__)toString()
@@ -173,14 +133,10 @@ update the (__)toString() method for classes with associated object to make use 
 
 e.g. for the toString method for class Movie, with the directorId: 
 
-Java
+```java
 	... other toString() stuff here ...
 	" director = " + this.getDirector()
-
-PHP
-	... other __toString() stuff here ...
-	" director = " . $this->getDirector()
-	
+```
 
 
 ---------------------------------------------
@@ -200,7 +156,7 @@ The general sequence is:
 
 Examples:
 
-Java
+```java
     LecturerRepository lecturerRepository = new LecturerRepository();
     lecturerRepository.resetTable();
 
@@ -217,30 +173,7 @@ Java
     for (Lecturer lecturer : lecturers) {
         System.out.println(lecturer);
     }
-
-PHP
-	<?php
-	require_once __DIR__ . '/../vendor/autoload.php';
-
-	use Tudublin\DirectorRepository;
-	use Tudublin\Director;
-
-	$director1 = new Director();
-	$director1->setName("Matt");
-	$directorRepository->insert($director1);
-
-	$director2 = new Director();
-	$director2->setName("Jojo");
-	$directorRepository->insert($director2);
-
-	$directors = $directorRepository->findAll();
-	foreach ($directors as $director) {
-	    print $director;
-	}
-
-
-
-
+```
 
 ---------------------------------------------
 (10) you can add a helper method "createAndInsert(...)" in your repository class
@@ -250,7 +183,7 @@ personally, I like to create and insert it into the database all in one go (a bi
 
 so I add methods like this to my repository classes, which create an object, set the properties and insert the object into the database
 
-Java
+```java
 	package tudublin;
 
 	import mattsmithdev.pdocrudrepo.DatabaseTableRepository;
@@ -264,30 +197,10 @@ Java
 	        this.insert(lecturer);
 	    }
 	}
+```	
 	
+So in our Main class we can create and insert a new object using the repository object all in one statement:
 
-PHP
-	<?php
-	namespace Tudublin;
-
-	use Mattsmithdev\PdoCrudRepo\DatabaseTableRepository;
-
-	class DirectorRepository extends DatabaseTableRepository
-	{
-	    public function createAndInsert(string $name)
-	    {
-	        $d = new Director();
-	        $d->setName($name);
-
-	        $this->insert($d);
-	    }
-	}
-	
-So in our Main/main we can create and insert a new object using the repository object all in one statement:
-
-Java
+```java
     lecturerRepository.createAndInsert("Jojo");	
-	
-PHP
-	$directorRepository->createAndInsert("Jojo");
-	
+```	
