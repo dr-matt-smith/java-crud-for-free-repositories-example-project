@@ -38,7 +38,7 @@ Run your project with `mvn exec:java`
 you'll be editing this main class/script to create / store in DB / read and print your own objects ...
 
 ---------------------------------------------
-(4) create "Tudublin" package/namespaced entity classes
+(4) create "Tudublin" package entity classes
 ---------------------------------------------
 
 (a)
