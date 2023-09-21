@@ -28,7 +28,10 @@ Build project (compile) with: `mvn clean package`
 - if you have the PHP Composer tool you can just type `composer build`
 
 
-Run your project with ``
+Run your project with `mvn exec:java`
+
+- note, the class congtaining the `main()` method to start your program's execution is declared in the `<mainClass>` element in the `pom.xml` Maven configuration file, which for this project is `<mainClass>tudublin.Main</mainClass>`
+
 - if you have the PHP Composer tool you can just type `composer go`
 	
 	
