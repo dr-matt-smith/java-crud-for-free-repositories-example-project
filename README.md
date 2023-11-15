@@ -65,7 +65,7 @@ for each entity class
 - for each entity create a class <Entity>Repository that subclasses (extends) the Matt's 'magic' class: `DatabaseTableRepository` 
 
 ```java
-import mattsmithdev.pdoCrudRepo.DatabaseTableRepository;	
+import mattsmithdev.pdocrudrepo.DatabaseTableRepository;	
 
 public class <MyEntity>Repository extends DatabaseTableRepository;	
 ```
