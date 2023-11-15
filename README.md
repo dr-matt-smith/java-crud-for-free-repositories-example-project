@@ -42,7 +42,7 @@ Run your project with `mvn exec:java`
 you'll be editing this main class/script to create / store in DB / read and print your own objects ...
 
 ---------------------------------------------
-(4) create "Tudublin" package entity classes
+(4) create "tudublin" package entity classes
 ---------------------------------------------
 
 (a)
@@ -53,7 +53,7 @@ folder `/src/main/java/tudublin/`
 
 (b)
 Note - my libraries don't yet work with enumerations
-so just delete any enumeration classes, and change enumation types to strings for this database version of your code
+so just delete any enumeration classes, and change enumeration types to strings for this database version of your code
 
 ---------------------------------------------
 (5) create Repository classes for each of your entity classes
@@ -73,7 +73,7 @@ public class <MyEntity>Repository extends DatabaseTableRepository;
 e.g. for the Movie entity class we create a MovieRepository class as follows:
 
 ```java
-packge Tudublin;
+package tudublin;
 
 import mattsmithdev.pdocrudrepo.DatabaseTableRepository;
 
@@ -92,7 +92,7 @@ this allows the MySQL database to manage AUTO INCREMENTED primary keys for each 
 ---------------------------------------------
 (7) for associated object properties change them to objectId properties (for foreign keys)
 ---------------------------------------------
-we have manually convert object associations into foreign key "id" properties
+we have to manually convert object associations into foreign key "id" properties
 
 (--a--)
 change object properties to "<object>Id" properties
