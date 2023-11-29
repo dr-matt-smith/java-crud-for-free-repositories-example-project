@@ -126,7 +126,7 @@ e.g. for our MMovie.directorId example:
 public Director getDirector()
 {
 DirectorRepository directorRepository = new DirectorRepository();
-Director director = directorRepository.find(this.directorId);
+Director director = directorRepository.find(Directory.class, this.directorId);
 
 return director;
 }
